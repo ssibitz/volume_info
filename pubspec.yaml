@@ -1,7 +1,7 @@
 name: volume_info
 description: "Showing info about volumes"
 version: 0.0.1
-homepage:
+homepage: https://github.com/ssibitz/volume_info
 
 environment:
   sdk: ^3.5.3
