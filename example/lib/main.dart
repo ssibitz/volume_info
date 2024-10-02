@@ -84,19 +84,19 @@ class _MyAppState extends State<MyApp> {
             Column(
               children: [
                 Text('Storage: ${_volumeSpaceTotalInGB.toStringAsFixed(0)} GB\n',
-                  style: TextStyle(
+                  style: const TextStyle(
                     color: Colors.orangeAccent,
                     fontSize: 34,
                     fontWeight: FontWeight.bold,
                   ),),
                 Text('Frei: ${_volumeSpaceFreeInGB.toStringAsFixed(0)} GB\n',
-                  style: TextStyle(
+                  style: const TextStyle(
                     color: Colors.orangeAccent,
                     fontSize: 34,
                     fontWeight: FontWeight.bold,
                   ),),
                 Text('Belegt: ${_volumeSpaceUsedInGB.toStringAsFixed(0)} GB\n',
-                  style: TextStyle(
+                  style: const TextStyle(
                     color: Colors.orangeAccent,
                     fontSize: 34,
                     fontWeight: FontWeight.bold,
