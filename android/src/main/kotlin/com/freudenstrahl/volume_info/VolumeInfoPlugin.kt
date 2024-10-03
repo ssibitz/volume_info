@@ -5,7 +5,6 @@ import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
-import android.content.Context
 import VolumeInfo
 
 class VolumeInfoPlugin: FlutterPlugin, MethodCallHandler {
@@ -22,9 +21,15 @@ class VolumeInfoPlugin: FlutterPlugin, MethodCallHandler {
     if (call.method == "getVolumeSpaceTotalInGB") {
       result.success(volumeInfo.getVolumeSpaceTotalInGB())
     } else if (call.method == "getVolumeSpaceFreeInGB") {
-        result.success(volumeInfo.getVolumeSpaceFreeInGB())
+      result.success(volumeInfo.getVolumeSpaceFreeInGB())
     } else if (call.method == "getVolumeSpaceUsedInGB") {
       result.success(volumeInfo.getVolumeSpaceUsedInGB())
+    } else if (call.method == "getVolumeSpaceExtTotalInGB") {
+      result.success(volumeInfo.getVolumeSpaceExtTotalInGB())
+    } else if (call.method == "getVolumeSpaceExtFreeInGB") {
+      result.success(volumeInfo.getVolumeSpaceExtFreeInGB())
+    } else if (call.method == "getVolumeSpaceExtUsedInGB") {
+      result.success(volumeInfo.getVolumeSpaceExtUsedInGB())
     } else {
       result.notImplemented()
     }

@@ -20,6 +20,9 @@ class _MyAppState extends State<MyApp> {
   double _volumeSpaceTotalInGB = 0.0;
   double _volumeSpaceFreeInGB = 0.0;
   double _volumeSpaceUsedInGB = 0.0;
+  double _volumeSpaceExtTotalInGB = 0.0;
+  double _volumeSpaceExtFreeInGB = 0.0;
+  double _volumeSpaceExtUsedInGB = 0.0;
 
   @override
   void initState() {
@@ -55,6 +58,32 @@ class _MyAppState extends State<MyApp> {
       volumeSpaceUsedInGB = -1;
     }
 
+    double volumeSpaceExtTotalInGB;
+    double volumeSpaceExtFreeInGB;
+    double volumeSpaceExtUsedInGB;
+    // Platform messages may fail, so we use a try/catch PlatformException.
+    // We also handle the message potentially returning null.
+    try {
+      volumeSpaceExtTotalInGB =
+          await _volumeInfoPlugin.getVolumeSpaceExtTotalInGB() ?? 0;
+    } on PlatformException {
+      volumeSpaceExtTotalInGB = -1;
+    }
+
+    try {
+      volumeSpaceExtFreeInGB =
+          await _volumeInfoPlugin.getVolumeSpaceExtFreeInGB() ?? 0;
+    } on PlatformException {
+      volumeSpaceExtFreeInGB = -1;
+    }
+
+    try {
+      volumeSpaceExtUsedInGB =
+          await _volumeInfoPlugin.getVolumeSpaceExtUsedInGB() ?? 0;
+    } on PlatformException {
+      volumeSpaceExtUsedInGB = -1;
+    }
+
     // If the widget was removed from the tree while the asynchronous platform
     // message was in flight, we want to discard the reply rather than calling
     // setState to update our non-existent appearance.
@@ -64,7 +93,51 @@ class _MyAppState extends State<MyApp> {
       _volumeSpaceTotalInGB = volumeSpaceTotalInGB;
       _volumeSpaceFreeInGB = volumeSpaceFreeInGB;
       _volumeSpaceUsedInGB = volumeSpaceUsedInGB;
+      _volumeSpaceExtTotalInGB = volumeSpaceExtTotalInGB;
+      _volumeSpaceExtFreeInGB = volumeSpaceExtFreeInGB;
+      _volumeSpaceExtUsedInGB = volumeSpaceExtUsedInGB;
     });
+  }
+
+  Widget getExtStorage(BuildContext context) {
+    if (_volumeSpaceExtTotalInGB < 0.0) {
+      return
+        Column(
+            children: [
+              Text(
+                "Ext drive not available",
+                style: const TextStyle(
+                  color: Colors.redAccent,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold
+                ),
+              )
+            ],
+      );
+    }
+    return
+      Column(
+          children: [
+            Text('Ext Storage: ${_volumeSpaceExtTotalInGB.toStringAsFixed(0)} GB\n',
+          style: const TextStyle(
+          color: Colors.orangeAccent,
+          fontSize: 34,
+          fontWeight: FontWeight.bold,
+          ),),
+          Text('Frei: ${_volumeSpaceExtFreeInGB.toStringAsFixed(0)} GB\n',
+          style: const TextStyle(
+          color: Colors.orangeAccent,
+          fontSize: 34,
+          fontWeight: FontWeight.bold,
+          ),),
+          Text('Belegt: ${_volumeSpaceExtUsedInGB.toStringAsFixed(0)} GB\n',
+          style: const TextStyle(
+          color: Colors.orangeAccent,
+          fontSize: 34,
+          fontWeight: FontWeight.bold,
+          ),),
+            ]
+      );
   }
 
   @override
@@ -101,6 +174,8 @@ class _MyAppState extends State<MyApp> {
                     fontSize: 34,
                     fontWeight: FontWeight.bold,
                   ),),
+                Text('-------------------------------------------------------------------------'),
+                getExtStorage(context),
               ],
             )
         ),

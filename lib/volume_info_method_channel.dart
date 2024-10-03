@@ -11,20 +11,33 @@ class MethodChannelVolumeInfo extends VolumeInfoPlatform {
 
   @override
   Future<double?> getVolumeSpaceTotalInGB() async {
-    final space = await methodChannel.invokeMethod<double>('getVolumeSpaceTotalInGB');
-    return space;
+    return await methodChannel.invokeMethod<double>('getVolumeSpaceTotalInGB');
   }
 
   @override
   Future<double?> getVolumeSpaceFreeInGB() async {
-    final space = await methodChannel.invokeMethod<double>('getVolumeSpaceFreeInGB');
-    return space;
+    return await methodChannel.invokeMethod<double>('getVolumeSpaceFreeInGB');
   }
 
   @override
   Future<double?> getVolumeSpaceUsedInGB() async {
-    final space = await methodChannel.invokeMethod<double>('getVolumeSpaceUsedInGB');
-    return space;
+    return await methodChannel.invokeMethod<double>('getVolumeSpaceUsedInGB');
   }
+
+  @override
+  Future<double?> getVolumeSpaceExtTotalInGB() async {
+    return await methodChannel.invokeMethod<double>('getVolumeSpaceExtTotalInGB');
+  }
+
+  @override
+  Future<double?> getVolumeSpaceExtFreeInGB() async {
+    return await methodChannel.invokeMethod<double>('getVolumeSpaceExtFreeInGB');
+  }
+
+  @override
+  Future<double?> getVolumeSpaceExtUsedInGB() async {
+    return await methodChannel.invokeMethod<double>('getVolumeSpaceExtUsedInGB');
+  }
+
 
 }

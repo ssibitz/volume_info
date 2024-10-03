@@ -35,4 +35,17 @@ abstract class VolumeInfoPlatform extends PlatformInterface {
     throw UnimplementedError('getVolumeSpaceUsedInGB() has not been implemented.');
   }
 
+  Future<double?> getVolumeSpaceExtTotalInGB() {
+    throw UnimplementedError('getVolumeSpaceExtTotalInGB() has not been implemented.');
+  }
+
+  Future<double?> getVolumeSpaceExtFreeInGB() {
+    throw UnimplementedError('getVolumeSpaceExtFreeInGB() has not been implemented.');
+  }
+
+  Future<double?> getVolumeSpaceExtUsedInGB() {
+    throw UnimplementedError('getVolumeSpaceExtUsedInGB() has not been implemented.');
+  }
+
+
 }
