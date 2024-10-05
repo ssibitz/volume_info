@@ -1,7 +1,7 @@
+import 'dart:collection';
+
 import 'package:flutter/material.dart';
 import 'dart:async';
-
-import 'package:flutter/services.dart';
 import 'package:volume_info/volume_info.dart';
 
 void main() {
@@ -15,171 +15,121 @@ class MyApp extends StatefulWidget {
   State<MyApp> createState() => _MyAppState();
 }
 
+class VolumeSizes {
+  double total = 0.0;
+  double free = 0.0;
+  double used = 0.0;
+}
+
 class _MyAppState extends State<MyApp> {
-  final _volumeInfoPlugin = VolumeInfo();
-  double _volumeSpaceTotalInGB = 0.0;
-  double _volumeSpaceFreeInGB = 0.0;
-  double _volumeSpaceUsedInGB = 0.0;
-  double _volumeSpaceExtTotalInGB = 0.0;
-  double _volumeSpaceExtFreeInGB = 0.0;
-  double _volumeSpaceExtUsedInGB = 0.0;
+  late VolumeInfo _volumeInfoPlugin;
+  late List<String>? _volumes;
+  late HashMap<String, bool> _primaryvolumes;
+  late HashMap<String, VolumeSizes> _volumesizes;
+
+  bool _inited = false;
 
   @override
   void initState() {
-    super.initState();
     initPlatformState();
+    super.initState();
   }
 
   // Platform messages are asynchronous, so we initialize in an async method.
   Future<void> initPlatformState() async {
-    double volumeSpaceTotalInGB;
-    double volumeSpaceFreeInGB;
-    double volumeSpaceUsedInGB;
-    // Platform messages may fail, so we use a try/catch PlatformException.
-    // We also handle the message potentially returning null.
-    try {
-      volumeSpaceTotalInGB =
-          await _volumeInfoPlugin.getVolumeSpaceTotalInGB() ?? 0;
-    } on PlatformException {
-      volumeSpaceTotalInGB = -1;
+    _volumeInfoPlugin = VolumeInfo();
+    Future<List<dynamic>?> futureOfList = _volumeInfoPlugin.getVolumesAbsolutePaths(true, true);
+    _volumes = (await futureOfList)!.cast<String>();
+
+    _primaryvolumes = HashMap<String, bool>();
+    _volumesizes = HashMap<String, VolumeSizes>();
+    for (var absolutePath in _volumes!) {
+      var isPrimaryVolume = await _volumeInfoPlugin.isVolumePrimary(absolutePath);
+      _primaryvolumes[absolutePath] = isPrimaryVolume!;
+      var volumeSpaceInGB = await _volumeInfoPlugin.getVolumeSpaceInGB(absolutePath);
+
     }
-
-    try {
-      volumeSpaceFreeInGB =
-          await _volumeInfoPlugin.getVolumeSpaceFreeInGB() ?? 0;
-    } on PlatformException {
-      volumeSpaceFreeInGB = -1;
-    }
-
-    try {
-      volumeSpaceUsedInGB =
-          await _volumeInfoPlugin.getVolumeSpaceUsedInGB() ?? 0;
-    } on PlatformException {
-      volumeSpaceUsedInGB = -1;
-    }
-
-    double volumeSpaceExtTotalInGB;
-    double volumeSpaceExtFreeInGB;
-    double volumeSpaceExtUsedInGB;
-    // Platform messages may fail, so we use a try/catch PlatformException.
-    // We also handle the message potentially returning null.
-    try {
-      volumeSpaceExtTotalInGB =
-          await _volumeInfoPlugin.getVolumeSpaceExtTotalInGB() ?? 0;
-    } on PlatformException {
-      volumeSpaceExtTotalInGB = -1;
-    }
-
-    try {
-      volumeSpaceExtFreeInGB =
-          await _volumeInfoPlugin.getVolumeSpaceExtFreeInGB() ?? 0;
-    } on PlatformException {
-      volumeSpaceExtFreeInGB = -1;
-    }
-
-    try {
-      volumeSpaceExtUsedInGB =
-          await _volumeInfoPlugin.getVolumeSpaceExtUsedInGB() ?? 0;
-    } on PlatformException {
-      volumeSpaceExtUsedInGB = -1;
-    }
-
-    // If the widget was removed from the tree while the asynchronous platform
-    // message was in flight, we want to discard the reply rather than calling
-    // setState to update our non-existent appearance.
-    if (!mounted) return;
-
     setState(() {
-      _volumeSpaceTotalInGB = volumeSpaceTotalInGB;
-      _volumeSpaceFreeInGB = volumeSpaceFreeInGB;
-      _volumeSpaceUsedInGB = volumeSpaceUsedInGB;
-      _volumeSpaceExtTotalInGB = volumeSpaceExtTotalInGB;
-      _volumeSpaceExtFreeInGB = volumeSpaceExtFreeInGB;
-      _volumeSpaceExtUsedInGB = volumeSpaceExtUsedInGB;
+      _inited = true;
     });
   }
 
-  Widget getExtStorage(BuildContext context) {
-    if (_volumeSpaceExtTotalInGB < 0.0) {
-      return
-        Column(
-            children: [
-              Text(
-                "Ext drive not available",
-                style: const TextStyle(
-                  color: Colors.redAccent,
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold
-                ),
-              )
-            ],
+  Widget details()  {
+    if (_inited == false) {
+      return const Column(
+        children: [
+          Text(
+            "Please wait..."
+          )
+        ],
       );
     }
-    return
-      Column(
-          children: [
-            Text('Ext Storage: ${_volumeSpaceExtTotalInGB.toStringAsFixed(0)} GB\n',
-          style: const TextStyle(
-          color: Colors.orangeAccent,
-          fontSize: 34,
-          fontWeight: FontWeight.bold,
-          ),),
-          Text('Frei: ${_volumeSpaceExtFreeInGB.toStringAsFixed(0)} GB\n',
-          style: const TextStyle(
-          color: Colors.orangeAccent,
-          fontSize: 34,
-          fontWeight: FontWeight.bold,
-          ),),
-          Text('Belegt: ${_volumeSpaceExtUsedInGB.toStringAsFixed(0)} GB\n',
-          style: const TextStyle(
-          color: Colors.orangeAccent,
-          fontSize: 34,
-          fontWeight: FontWeight.bold,
-          ),),
-            ]
+    // Build a list of information
+    List<Widget> children = [];
+    for (var absolutePath in _volumes!) {
+      children.add(
+          Text("Volume: $absolutePath")
       );
+      if (_primaryvolumes[absolutePath] == true) {
+        children.add(
+          const Text("Primary volume")
+        );
+      } else {
+        children.add(
+            const Text("Other volume")
+        );
+      }
+      /*
+      HashMap<String, double> volumeSpace = HashMap<String, double>();
+      _volumeInfoPlugin.getVolumeSpaceInGB(absolutePath).then((data) {
+        volumeSpace = data!;
+      });
+      children.add(
+          Text("Total: ${volumeSpace['total']}")
+      );
+      children.add(
+          Text("Free: ${volumeSpace['free']}")
+      );
+      children.add(
+          Text("Used: ${volumeSpace['used']}")
+      );
+       */
+      children.add(
+          const Text("---------------------------------")
+      );
+    }
+    var isVolumeAvailable = false;
+    _volumeInfoPlugin.isVolumeAvailable("absolutePath").then((data) {
+      isVolumeAvailable = data!;
+    });
+    if (isVolumeAvailable == true) {
+      children.add(
+          const Text("Special volume has been detected")
+      );
+    }
+    return Column(
+      children: children,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
-        appBar: AppBar(
-          title: const Text('Plugin volume_info example app',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
+        appBar:
+          AppBar(
+            title: const Text('Plugin volume_info example app',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
             ),
+        ),
+        body:
+          Center(
+            child: details(),
           ),
         ),
-        body: Center(
-          child:
-            Column(
-              children: [
-                Text('Storage: ${_volumeSpaceTotalInGB.toStringAsFixed(0)} GB\n',
-                  style: const TextStyle(
-                    color: Colors.orangeAccent,
-                    fontSize: 34,
-                    fontWeight: FontWeight.bold,
-                  ),),
-                Text('Frei: ${_volumeSpaceFreeInGB.toStringAsFixed(0)} GB\n',
-                  style: const TextStyle(
-                    color: Colors.orangeAccent,
-                    fontSize: 34,
-                    fontWeight: FontWeight.bold,
-                  ),),
-                Text('Belegt: ${_volumeSpaceUsedInGB.toStringAsFixed(0)} GB\n',
-                  style: const TextStyle(
-                    color: Colors.orangeAccent,
-                    fontSize: 34,
-                    fontWeight: FontWeight.bold,
-                  ),),
-                Text('-------------------------------------------------------------------------'),
-                getExtStorage(context),
-              ],
-            )
-        ),
-      ),
     );
   }
 }

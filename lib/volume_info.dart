@@ -1,23 +1,24 @@
-
 import 'volume_info_platform_interface.dart';
+import 'dart:collection';
 
 class VolumeInfo {
-  Future<double?> getVolumeSpaceTotalInGB() {
-    return VolumeInfoPlatform.instance.getVolumeSpaceTotalInGB();
+  Future<bool?> isVolumeAvailable(String absolutePath) {
+    return VolumeInfoPlatform.instance.isVolumeAvailable(absolutePath);
   }
-  Future<double?> getVolumeSpaceFreeInGB() {
-    return VolumeInfoPlatform.instance.getVolumeSpaceFreeInGB();
+
+  Future<bool?> isVolumePrimary(String absolutePath) {
+    return VolumeInfoPlatform.instance.isVolumePrimary(absolutePath);
   }
-  Future<double?> getVolumeSpaceUsedInGB() {
-    return VolumeInfoPlatform.instance.getVolumeSpaceUsedInGB();
+
+  Future<Map<dynamic, dynamic>?> getVolumeSpaceInGB(String absolutePath) {
+    return VolumeInfoPlatform.instance.getVolumeSpaceInGB(absolutePath);
   }
-  Future<double?> getVolumeSpaceExtTotalInGB() {
-    return VolumeInfoPlatform.instance.getVolumeSpaceExtTotalInGB();
+
+  Future<List<dynamic>?> getVolumesAbsolutePaths(bool includePrimary, bool includeRemoveable) {
+    return VolumeInfoPlatform.instance.getVolumesAbsolutePaths(includePrimary, includeRemoveable);
   }
-  Future<double?> getVolumeSpaceExtFreeInGB() {
-    return VolumeInfoPlatform.instance.getVolumeSpaceExtFreeInGB();
-  }
-  Future<double?> getVolumeSpaceExtUsedInGB() {
-    return VolumeInfoPlatform.instance.getVolumeSpaceExtUsedInGB();
+
+  Future<Map<dynamic, dynamic>?> getVolumeSpacePrimary() {
+    return VolumeInfoPlatform.instance.getVolumeSpacePrimary();
   }
 }

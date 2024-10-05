@@ -1,92 +1,122 @@
-import android.annotation.SuppressLint
-import kotlin.math.round
-import android.content.Context
+import android.annotation.TargetApi
 import android.app.usage.StorageStatsManager
+import android.content.Context
+import android.os.Build
 import android.os.storage.StorageManager
 import android.os.storage.StorageVolume
+import kotlin.math.round
 
 const val KiB = 1_024L
 const val MiB = KiB * KiB
 const val GiB = KiB * KiB * KiB
 
-class VolumeInfo {
+class VolumeInfo(var context: Context) {
 
-    private var volumeSpaceTotalPrimary: Double = 0.0
-    private var volumeSpaceUsedPrimary: Double = 0.0
-    private var volumeSpaceFreePrimary: Double = 0.0
-    private var volumeSpaceTotalExternal: Double = 0.0
-    private var volumeSpaceUsedExternal: Double = 0.0
-    private var volumeSpaceFreeExternal: Double = 0.0
-
-    constructor(context: Context) {
-        getVolumeStorageStats(context)
+    @TargetApi(Build.VERSION_CODES.R)
+    public fun isVolumeAvailable(absolutePath: String): Boolean? {
+        return this.getStorageVolumeByAbsolutePath(absolutePath) != null
     }
 
-    @SuppressLint("NewApi")
-    public fun getVolumeStorageStats(context: Context) {
-        val uuid = StorageManager.UUID_DEFAULT
-        val storageStatsManager = context.getSystemService(Context.STORAGE_STATS_SERVICE) as StorageStatsManager
-        var totalSpace: Long = (storageStatsManager.getTotalBytes(uuid) / 1_000_000_000) * GiB
-        var usedSpace: Long = totalSpace - storageStatsManager.getFreeBytes(uuid)
-        // Calc space (Primary)
-        volumeSpaceTotalPrimary = round(totalSpace.toDouble()/GiB.toDouble())
-        volumeSpaceUsedPrimary = round(usedSpace.toDouble()/GiB.toDouble())
-        volumeSpaceFreePrimary = round((totalSpace-usedSpace).toDouble()/GiB.toDouble())
-        // Calc space (External)
-        try {
-            var totalSpace: Long = 0L
-            var usedSpace: Long = 0L
-            val mStorageManager = context.getSystemService(Context.STORAGE_SERVICE) as StorageManager
-            val extDirs = context.getExternalFilesDirs(null)
-            var found = false
-            extDirs.forEach { file ->
-                val storageVolume: StorageVolume? = mStorageManager.getStorageVolume(file)
-                if (storageVolume != null) {
-                    if (storageVolume.isPrimary == false) {
-                        found = true
-                        totalSpace = file.totalSpace
-                        usedSpace = totalSpace - file.freeSpace
-                    }
+    @TargetApi(Build.VERSION_CODES.R)
+    public fun isVolumePrimary(absolutePath: String): Boolean? {
+        var result = false
+        var storageVolume = this.getStorageVolumeByAbsolutePath(absolutePath)
+        if (storageVolume != null) {
+            result = storageVolume.isPrimary
+        }
+        return result
+    }
+
+    @TargetApi(Build.VERSION_CODES.R)
+    public fun getVolumesAbsolutePaths(includePrimary: Boolean, includeRemoveable: Boolean):List<String>? {
+        var result = mutableListOf<String>()
+        for (storageVolume in this.getStorageVolumes()) {
+            if ((!includePrimary && storageVolume.isPrimary) || (!includeRemoveable && storageVolume.isRemovable)) {
+                continue
+            }
+            val dir = storageVolume.directory
+            if (dir != null) {
+                result.add(dir.getAbsolutePath())
+            }
+        }
+        return result
+    }
+
+    @TargetApi(Build.VERSION_CODES.R)
+    public fun getVolumeSpacePrimary(): MutableMap<String, Double>? {
+        var result = getEmptyVolumeSpaceInGB()
+        val volumes = getVolumesAbsolutePaths(true, false)
+        if (volumes != null) {
+            if (volumes.isNotEmpty()) {
+                result = getVolumeSpaceInGB(volumes[0])!!
+            }
+        }
+        return result
+    }
+
+    @TargetApi(Build.VERSION_CODES.R)
+    public fun getVolumeSpaceInGB(absolutePath: String): MutableMap<String, Double>? {
+        var result = getEmptyVolumeSpaceInGB()
+        val storageVolume = this.getStorageVolumeByAbsolutePath(absolutePath)
+        if (storageVolume != null) {
+            var volumeSpaceTotal = 0.0
+            var volumeSpaceFree = 0.0
+            var volumeSpaceUsed = 0.0
+            if (storageVolume.isPrimary) {
+                val mStorageStatsManager = context.getSystemService(Context.STORAGE_STATS_SERVICE) as StorageStatsManager
+                if (mStorageStatsManager != null) {
+                    val totalSpace: Long = (mStorageStatsManager.getTotalBytes(StorageManager.UUID_DEFAULT) / 1_000_000_000) * GiB
+                    val usedSpace: Long = totalSpace - mStorageStatsManager.getFreeBytes(StorageManager.UUID_DEFAULT)
+                    volumeSpaceTotal = round(totalSpace.toDouble()/GiB.toDouble())
+                    volumeSpaceFree = round(usedSpace.toDouble()/GiB.toDouble())
+                    volumeSpaceUsed = round((totalSpace-usedSpace).toDouble()/GiB.toDouble())
+                }
+            } else {
+                val dir = storageVolume.getDirectory()
+                if (dir != null) {
+                    volumeSpaceTotal = dir.totalSpace.toDouble() / GiB
+                    volumeSpaceFree = dir.freeSpace.toDouble() / GiB
+                    volumeSpaceUsed = volumeSpaceTotal - volumeSpaceFree
                 }
             }
-            if (found) {
-                volumeSpaceTotalExternal = round(totalSpace.toDouble() / GiB.toDouble())
-                volumeSpaceUsedExternal = round(usedSpace.toDouble() / GiB.toDouble())
-                volumeSpaceFreeExternal = round((totalSpace - usedSpace).toDouble() / GiB.toDouble())
-            } else {
-                // No external storage found
-                volumeSpaceTotalExternal = -1.0
-                volumeSpaceUsedExternal = -1.0
-                volumeSpaceFreeExternal = -1.0
-            }
-        } catch (e: Exception) {
-            // Ignore
+            result.put("total", volumeSpaceTotal)
+            result.put("free", volumeSpaceFree)
+            result.put("used", volumeSpaceUsed)
         }
+        return result
     }
 
-    public fun getVolumeSpaceTotalInGB():Double {
-        return volumeSpaceTotalPrimary
+    private fun getEmptyVolumeSpaceInGB(): MutableMap<String, Double> {
+        var result = mutableMapOf<String, Double>()
+        result.put("total", 0.0)
+        result.put("free", 0.0)
+        result.put("used", 0.0)
+        return result
     }
 
-    public fun getVolumeSpaceFreeInGB():Double {
-        return volumeSpaceFreePrimary
+    @TargetApi(Build.VERSION_CODES.R)
+    private fun getStorageVolumes():List<StorageVolume> {
+        var result = mutableListOf<StorageVolume>()
+        val mStorageManager = context.getSystemService(Context.STORAGE_SERVICE) as StorageManager
+        if (mStorageManager != null) {
+            result = mStorageManager.storageVolumes
+        }
+        return result
     }
 
-    public fun getVolumeSpaceUsedInGB():Double {
-        return volumeSpaceUsedPrimary
+    @TargetApi(Build.VERSION_CODES.R)
+    private fun getStorageVolumeByAbsolutePath(absolutePath: String): StorageVolume? {
+        var result: StorageVolume? = null;
+        for (storageVolume in getStorageVolumes()) {
+            val dir = storageVolume.getDirectory()
+            if (dir != null) {
+                val volumePath = dir.getAbsolutePath()
+                if (volumePath == absolutePath) {
+                    result = storageVolume
+                    break
+                }
+            }
+        }
+        return result
     }
-
-    public fun getVolumeSpaceExtTotalInGB():Double {
-        return volumeSpaceTotalExternal
-    }
-
-    public fun getVolumeSpaceExtFreeInGB():Double {
-        return volumeSpaceFreeExternal
-    }
-
-    public fun getVolumeSpaceExtUsedInGB():Double {
-        return volumeSpaceUsedExternal
-    }
-
-
 }

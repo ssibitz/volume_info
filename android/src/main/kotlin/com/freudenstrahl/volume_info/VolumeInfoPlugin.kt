@@ -18,18 +18,21 @@ class VolumeInfoPlugin: FlutterPlugin, MethodCallHandler {
   }
 
   override fun onMethodCall(call: MethodCall, result: Result) {
-    if (call.method == "getVolumeSpaceTotalInGB") {
-      result.success(volumeInfo.getVolumeSpaceTotalInGB())
-    } else if (call.method == "getVolumeSpaceFreeInGB") {
-      result.success(volumeInfo.getVolumeSpaceFreeInGB())
-    } else if (call.method == "getVolumeSpaceUsedInGB") {
-      result.success(volumeInfo.getVolumeSpaceUsedInGB())
-    } else if (call.method == "getVolumeSpaceExtTotalInGB") {
-      result.success(volumeInfo.getVolumeSpaceExtTotalInGB())
-    } else if (call.method == "getVolumeSpaceExtFreeInGB") {
-      result.success(volumeInfo.getVolumeSpaceExtFreeInGB())
-    } else if (call.method == "getVolumeSpaceExtUsedInGB") {
-      result.success(volumeInfo.getVolumeSpaceExtUsedInGB())
+    if (call.method == "isVolumeAvailable") {
+      val absolutePath = call.argument<String>("absolutePath")
+      result.success(volumeInfo.isVolumeAvailable(absolutePath?:""))
+    } else if (call.method == "isVolumePrimary") {
+      val absolutePath = call.argument<String>("absolutePath")
+      result.success(volumeInfo.isVolumePrimary(absolutePath?:""))
+    } else if (call.method == "getVolumeSpaceInGB") {
+      val absolutePath = call.argument<String>("absolutePath")
+      result.success(volumeInfo.getVolumeSpaceInGB(absolutePath?:""))
+    } else if (call.method == "getVolumesAbsolutePaths") {
+      val includePrimary = call.argument<Boolean>("includePrimary")
+      val includeRemoveable = call.argument<Boolean>("includeRemoveable")
+      result.success(volumeInfo.getVolumesAbsolutePaths(includePrimary?:true, includeRemoveable?:true))
+    } else if (call.method == "getVolumeSpacePrimary") {
+      result.success(volumeInfo.getVolumeSpacePrimary())
     } else {
       result.notImplemented()
     }
