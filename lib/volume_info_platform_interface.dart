@@ -1,5 +1,6 @@
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 import 'volume_info_method_channel.dart';
+import 'volume_info.dart';
 
 abstract class VolumeInfoPlatform extends PlatformInterface {
   VolumeInfoPlatform() : super(token: _token);
@@ -13,23 +14,35 @@ abstract class VolumeInfoPlatform extends PlatformInterface {
     _instance = instance;
   }
 
-  Future<List<dynamic>?> getVolumesAbsolutePaths(bool includePrimary, bool includeRemoveable) {
-    throw UnimplementedError('getVolumesAbsolutePaths() has not been implemented.');
+  Future<List<String>?> getVolumesUUIDs(bool includePrimary, bool includeRemoveable) {
+    throw UnimplementedError('getVolumesUUIDs() has not been implemented.');
   }
 
-  Future<bool?> isVolumeAvailable(String absolutePath) {
+  Future<bool?> isVolumeAvailable(String uuid) {
     throw UnimplementedError('isVolumeAvailable() has not been implemented.');
   }
 
-  Future<bool?> isVolumePrimary(String absolutePath) {
+  Future<bool?> isVolumePrimary(String uuid) {
     throw UnimplementedError('isVolumePrimary() has not been implemented.');
   }
 
-  Future<Map<dynamic, dynamic>?> getVolumeSpaceInGB(String absolutePath) {
+  Future<bool?> isRemoveable(String uuid) {
+    throw UnimplementedError('isRemoveable() has not been implemented.');
+  }
+
+  Future<String?> getVolumeState(String uuid) {
+    throw UnimplementedError('getVolumeState() has not been implemented.');
+  }
+
+  Future<String?> getVolumeAbsolutePath(String uuid) {
+    throw UnimplementedError('getVolumeAbsolutePath() has not been implemented.');
+  }
+
+  Future<VolumeSpace?> getVolumeSpaceInGB(String uuid) {
     throw UnimplementedError('getVolumeSpaceInGB() has not been implemented.');
   }
 
-  Future<Map<dynamic, dynamic>?> getVolumeSpacePrimary() {
+  Future<VolumeSpace?> getVolumeSpacePrimary() {
     throw UnimplementedError('getVolumeSpacePrimary() has not been implemented.');
   }
 }

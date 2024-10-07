@@ -13,85 +13,87 @@ class MyApp extends StatefulWidget {
   State<MyApp> createState() => _MyAppState();
 }
 
-class VolumeSizes {
-  double total = 0.0;
-  double free = 0.0;
-  double used = 0.0;
-  VolumeSizes(double total, double free, double used) {
-    this.total = total;
-    this.free = free;
-    this.used = used;
+class VolumeInfoDetails {
+  late bool isVolumePrimary;
+  late bool isVolumeRemoveable;
+  late String volumeState;
+  late String volumeDirectory;
+  late VolumeSpace volumeSpace;
+  VolumeInfoDetails(bool isVolumePrimary, bool isVolumeRemoveable, String volumeState, String volumeDirectory, VolumeSpace volumeSpace) {
+    this.isVolumePrimary = isVolumePrimary;
+    this.isVolumeRemoveable = isVolumeRemoveable;
+    this.volumeState = volumeState;
+    this.volumeDirectory = volumeDirectory;
+    this.volumeSpace = volumeSpace;
   }
 }
 
 class _MyAppState extends State<MyApp> {
   final VolumeInfo _volumeInfoPlugin = VolumeInfo();
-  late List<String>? _volumes;
-  late Map<String, bool> _primaryvolumes = Map<String, bool>();
-  late Map<String, VolumeSizes> _volumesizes = Map<String, VolumeSizes>();
-  bool _inited = false;
+  late final Map<String, VolumeInfoDetails> _volumesDetails = <String, VolumeInfoDetails>{};
 
   @override
   void initState() {
-    initPlatformState();
+    loadVolumes();
     super.initState();
   }
 
-  // Platform messages are asynchronous, so we initialize in an async method.
-  Future<void> initPlatformState() async {
-    _inited = false;
-    await loadVolumes();
-    setState(() {
-      _inited = true;
-    });
-  }
-
-  Future<List<String>?> loadVolumes() async {
-    _volumesizes.clear();
-    _primaryvolumes.clear();
-    Future<List<dynamic>?> futureOfList = _volumeInfoPlugin.getVolumesAbsolutePaths(true, true);
-    for (var absolutePath in _volumes!) {
-      var isPrimaryVolume = await _volumeInfoPlugin.isVolumePrimary(absolutePath);
-      _primaryvolumes[absolutePath] = isPrimaryVolume!;
-      Map? volumeSpaceInGB = await _volumeInfoPlugin.getVolumeSpaceInGB(absolutePath);
-      if (volumeSpaceInGB != null) {
-        _volumesizes[absolutePath] = VolumeSizes
-          (
-          volumeSpaceInGB[SpaceTotal],
-          volumeSpaceInGB[SpaceFree],
-          volumeSpaceInGB[SpaceUsed],
-        );
-      }
+  Future<void> loadVolumes() async {
+    _volumesDetails.clear();
+    List<String>? volumes = await _volumeInfoPlugin.getVolumesUUIDs(true, true);
+    for (var uuid in volumes!) {
+      bool isVolumePrimary = (await _volumeInfoPlugin.isVolumePrimary(uuid))!;
+      bool isVolumeRemoveable = (await _volumeInfoPlugin.isRemoveable(uuid))!;
+      String volumeState = (await _volumeInfoPlugin.getVolumeState(uuid))!;
+      String volumeDirectory = (await _volumeInfoPlugin.getVolumeAbsolutePath(uuid))!;
+      VolumeSpace volumeSpace = (await _volumeInfoPlugin.getVolumeSpaceInGB(uuid))!;
+      // Store all information(s) into a map
+      _volumesDetails[uuid] = VolumeInfoDetails(isVolumePrimary, isVolumeRemoveable, volumeState, volumeDirectory, volumeSpace);
     }
-    _volumes = (await futureOfList)!.cast<String>();
-    return _volumes;
+    setState(() {});
   }
 
-  Future<bool?> volumeExists(String absolutePath) async {
-    return await _volumeInfoPlugin.isVolumeAvailable(absolutePath);
+  Future<bool?> volumeExists(String uuid) async {
+    return await _volumeInfoPlugin.isVolumeAvailable(uuid);
   }
 
   Widget check4Volume() {
-    final String Volume2Check = "/storage/10F0-371C";
+    if (_volumesDetails.isEmpty) {
+      return const Column(
+        children: [
+          Text(
+              "Detecting removeable volume..."
+          )
+        ],
+      );
+    }
+    // Use first removeable volume for check
+    String volume2Check = "";
+    for (var uuid in _volumesDetails.keys) {
+      if (_volumesDetails[uuid]!.isVolumeRemoveable) {
+        volume2Check = uuid;
+        break;
+      }
+    }
     return Column(
       children: [
         FutureBuilder(
-          future: volumeExists(Volume2Check),
+          future: volumeExists(volume2Check),
           builder: (ctx, snapshot) {
             if (snapshot.connectionState == ConnectionState.done) {
               if (snapshot.hasError) {
                 return Center(
                   child: Text(
                     '${snapshot.error} occurred',
-                    style: TextStyle(fontSize: 18),
+                    style: const TextStyle(fontSize: 18),
                   ),
                 );
               } else if (snapshot.hasData) {
                 final data = snapshot.data as bool;
                 if (data == true) {
-                  return Center(
+                  return const Center(
                     child: Text(
-                      "Volume is available",
+                      "Removeable volume is available",
                       style: TextStyle(
                         fontSize: 20,
                         color: Colors.lightGreen
@@ -99,9 +101,9 @@ class _MyAppState extends State<MyApp> {
                     ),
                   );
                 } else {
-                  return Center(
+                  return const Center(
                     child: Text(
-                      "Volume does not exist",
+                      "Removeable volume does not exist",
                       style: TextStyle(
                           fontSize: 20,
                         color: Colors.redAccent
@@ -112,7 +114,7 @@ class _MyAppState extends State<MyApp> {
               }
             }
             // Displaying LoadingSpinner to indicate waiting state
-            return Center(
+            return const Center(
               child: CircularProgressIndicator(),
             );
           },
@@ -122,7 +124,7 @@ class _MyAppState extends State<MyApp> {
   }
 
   Widget details()  {
-    if (_inited == false) {
+    if (_volumesDetails.isEmpty) {
       return const Column(
         children: [
           Text(
@@ -133,11 +135,17 @@ class _MyAppState extends State<MyApp> {
     }
     // Build a list of information
     List<Widget> children = [];
-    for (var absolutePath in _volumes!) {
+    for (var uuid in _volumesDetails.keys) {
       children.add(
-          Text("Volume: $absolutePath")
+          Text("Volumes UUID: $uuid")
       );
-      if (_primaryvolumes[absolutePath] == true) {
+      children.add(
+          Text("Path: ${_volumesDetails[uuid]!.volumeDirectory}")
+      );
+      children.add(
+          Text("State: ${_volumesDetails[uuid]!.volumeState}")
+      );
+      if (_volumesDetails[uuid]!.isVolumePrimary == true) {
         children.add(
           const Text("Primary volume")
         );
@@ -146,19 +154,26 @@ class _MyAppState extends State<MyApp> {
             const Text("Other volume")
         );
       }
-      VolumeSizes? volumeSize = _volumesizes[absolutePath];
-      if (volumeSize != null) {
+      if (_volumesDetails[uuid]!.isVolumeRemoveable == true) {
         children.add(
-            Text("Total: ${volumeSize.total.round()} GB")
+            const Text("Removeable volume")
         );
+      } else {
         children.add(
-            Text("Free: ${volumeSize.free.round()} GB")
-        );
-        children.add(
-            Text("Used: ${volumeSize.used.round()} GB")
+            const Text("Non removeable volume")
         );
       }
+      VolumeSpace? volumeSpace = _volumesDetails[uuid]!.volumeSpace;
       children.add(
+          Text("Total: ${volumeSpace.totalInGB.round()} GB")
+      );
+      children.add(
+          Text("Free: ${volumeSpace.freeInGB.round()} GB")
+      );
+      children.add(
+          Text("Used: ${volumeSpace.usedInGB.round()} GB")
+      );
+          children.add(
           const Text("---------------------------------")
       );
     }

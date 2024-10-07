@@ -9,3 +9,6 @@ Adding external devices
 
 0.0.4
 Refactored and optimized to get a list of all devices, spaces and test again primary or check availablebility
+
+0.0.5
+Making it easier to get information by using wrapper classes

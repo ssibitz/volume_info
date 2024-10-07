@@ -5,7 +5,6 @@ import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
-import VolumeInfo
 
 class VolumeInfoPlugin: FlutterPlugin, MethodCallHandler {
   private lateinit var channel : MethodChannel
@@ -18,19 +17,25 @@ class VolumeInfoPlugin: FlutterPlugin, MethodCallHandler {
   }
 
   override fun onMethodCall(call: MethodCall, result: Result) {
-    if (call.method == "getVolumesAbsolutePaths") {
-      val includePrimary = call.argument<Boolean>("includePrimary")
-      val includeRemoveable = call.argument<Boolean>("includeRemoveable")
-      result.success(volumeInfo.getVolumesAbsolutePaths(includePrimary?:true, includeRemoveable?:true))
+    // Get parameters
+    val includePrimary = call.argument<Boolean>("includePrimary")
+    val includeRemoveable = call.argument<Boolean>("includeRemoveable")
+    val uuid = call.argument<String>("uuid")
+    // Return result by method name
+    if (call.method == "getVolumesUUIDs") {
+      result.success(volumeInfo.getVolumesUUIDs(includePrimary?:true, includeRemoveable?:true))
     } else if (call.method == "isVolumeAvailable") {
-      val absolutePath = call.argument<String>("absolutePath")
-      result.success(volumeInfo.isVolumeAvailable(absolutePath?:""))
+      result.success(volumeInfo.isVolumeAvailable(uuid?:""))
     } else if (call.method == "isVolumePrimary") {
-      val absolutePath = call.argument<String>("absolutePath")
-      result.success(volumeInfo.isVolumePrimary(absolutePath?:""))
+      result.success(volumeInfo.isVolumePrimary(uuid?:""))
+    } else if (call.method == "isRemoveable") {
+      result.success(volumeInfo.isRemoveable(uuid?:""))
+    } else if (call.method == "getVolumeState") {
+      result.success(volumeInfo.getVolumeState(uuid?:""))
+    } else if (call.method == "getVolumeAbsolutePath") {
+      result.success(volumeInfo.getVolumeAbsolutePath(uuid?:""))
     } else if (call.method == "getVolumeSpaceInGB") {
-      val absolutePath = call.argument<String>("absolutePath")
-      result.success(volumeInfo.getVolumeSpaceInGB(absolutePath?:""))
+      result.success(volumeInfo.getVolumeSpaceInGB(uuid?:""))
     } else if (call.method == "getVolumeSpacePrimary") {
       result.success(volumeInfo.getVolumeSpacePrimary())
     } else {
