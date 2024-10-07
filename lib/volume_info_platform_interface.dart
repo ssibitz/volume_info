@@ -1,6 +1,5 @@
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 import 'volume_info_method_channel.dart';
-import 'dart:collection';
 
 abstract class VolumeInfoPlatform extends PlatformInterface {
   VolumeInfoPlatform() : super(token: _token);
@@ -14,6 +13,10 @@ abstract class VolumeInfoPlatform extends PlatformInterface {
     _instance = instance;
   }
 
+  Future<List<dynamic>?> getVolumesAbsolutePaths(bool includePrimary, bool includeRemoveable) {
+    throw UnimplementedError('getVolumesAbsolutePaths() has not been implemented.');
+  }
+
   Future<bool?> isVolumeAvailable(String absolutePath) {
     throw UnimplementedError('isVolumeAvailable() has not been implemented.');
   }
@@ -24,10 +27,6 @@ abstract class VolumeInfoPlatform extends PlatformInterface {
 
   Future<Map<dynamic, dynamic>?> getVolumeSpaceInGB(String absolutePath) {
     throw UnimplementedError('getVolumeSpaceInGB() has not been implemented.');
-  }
-
-  Future<List<dynamic>?> getVolumesAbsolutePaths(bool includePrimary, bool includeRemoveable) {
-    throw UnimplementedError('getVolumesAbsolutePaths() has not been implemented.');
   }
 
   Future<Map<dynamic, dynamic>?> getVolumeSpacePrimary() {

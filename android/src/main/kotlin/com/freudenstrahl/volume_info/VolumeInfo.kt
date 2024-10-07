@@ -10,22 +10,11 @@ const val KiB = 1_024L
 const val MiB = KiB * KiB
 const val GiB = KiB * KiB * KiB
 
+const val SpaceTotal = "total"
+const val SpaceFree = "free"
+const val SpaceUsed = "used"
+
 class VolumeInfo(var context: Context) {
-
-    @TargetApi(Build.VERSION_CODES.R)
-    public fun isVolumeAvailable(absolutePath: String): Boolean? {
-        return this.getStorageVolumeByAbsolutePath(absolutePath) != null
-    }
-
-    @TargetApi(Build.VERSION_CODES.R)
-    public fun isVolumePrimary(absolutePath: String): Boolean? {
-        var result = false
-        var storageVolume = this.getStorageVolumeByAbsolutePath(absolutePath)
-        if (storageVolume != null) {
-            result = storageVolume.isPrimary
-        }
-        return result
-    }
 
     @TargetApi(Build.VERSION_CODES.R)
     public fun getVolumesAbsolutePaths(includePrimary: Boolean, includeRemoveable: Boolean):List<String>? {
@@ -43,13 +32,16 @@ class VolumeInfo(var context: Context) {
     }
 
     @TargetApi(Build.VERSION_CODES.R)
-    public fun getVolumeSpacePrimary(): MutableMap<String, Double>? {
-        var result = getEmptyVolumeSpaceInGB()
-        val volumes = getVolumesAbsolutePaths(true, false)
-        if (volumes != null) {
-            if (volumes.isNotEmpty()) {
-                result = getVolumeSpaceInGB(volumes[0])!!
-            }
+    public fun isVolumeAvailable(absolutePath: String): Boolean? {
+        return this.getStorageVolumeByAbsolutePath(absolutePath) != null
+    }
+
+    @TargetApi(Build.VERSION_CODES.R)
+    public fun isVolumePrimary(absolutePath: String): Boolean? {
+        var result = false
+        var storageVolume = this.getStorageVolumeByAbsolutePath(absolutePath)
+        if (storageVolume != null) {
+            result = storageVolume.isPrimary
         }
         return result
     }
@@ -79,18 +71,23 @@ class VolumeInfo(var context: Context) {
                     volumeSpaceUsed = volumeSpaceTotal - volumeSpaceFree
                 }
             }
-            result.put("total", volumeSpaceTotal)
-            result.put("free", volumeSpaceFree)
-            result.put("used", volumeSpaceUsed)
+
+            result.put(SpaceTotal, volumeSpaceTotal)
+            result.put(SpaceFree, volumeSpaceFree)
+            result.put(SpaceUsed, volumeSpaceUsed)
         }
         return result
     }
 
-    private fun getEmptyVolumeSpaceInGB(): MutableMap<String, Double> {
-        var result = mutableMapOf<String, Double>()
-        result.put("total", 0.0)
-        result.put("free", 0.0)
-        result.put("used", 0.0)
+    @TargetApi(Build.VERSION_CODES.R)
+    public fun getVolumeSpacePrimary(): MutableMap<String, Double>? {
+        var result = getEmptyVolumeSpaceInGB()
+        val volumes = getVolumesAbsolutePaths(true, false)
+        if (volumes != null) {
+            if (volumes.isNotEmpty()) {
+                result = getVolumeSpaceInGB(volumes[0])!!
+            }
+        }
         return result
     }
 
@@ -101,6 +98,14 @@ class VolumeInfo(var context: Context) {
         if (mStorageManager != null) {
             result = mStorageManager.storageVolumes
         }
+        return result
+    }
+
+    private fun getEmptyVolumeSpaceInGB(): MutableMap<String, Double> {
+        var result = mutableMapOf<String, Double>()
+        result.put(SpaceTotal, 0.0)
+        result.put(SpaceFree, 0.0)
+        result.put(SpaceUsed, 0.0)
         return result
     }
 

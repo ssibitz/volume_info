@@ -1,7 +1,14 @@
 import 'volume_info_platform_interface.dart';
-import 'dart:collection';
+
+final SpaceTotal = "total";
+final SpaceFree = "free";
+final SpaceUsed = "used";
 
 class VolumeInfo {
+  Future<List<dynamic>?> getVolumesAbsolutePaths(bool includePrimary, bool includeRemoveable) {
+    return VolumeInfoPlatform.instance.getVolumesAbsolutePaths(includePrimary, includeRemoveable);
+  }
+
   Future<bool?> isVolumeAvailable(String absolutePath) {
     return VolumeInfoPlatform.instance.isVolumeAvailable(absolutePath);
   }
@@ -12,10 +19,6 @@ class VolumeInfo {
 
   Future<Map<dynamic, dynamic>?> getVolumeSpaceInGB(String absolutePath) {
     return VolumeInfoPlatform.instance.getVolumeSpaceInGB(absolutePath);
-  }
-
-  Future<List<dynamic>?> getVolumesAbsolutePaths(bool includePrimary, bool includeRemoveable) {
-    return VolumeInfoPlatform.instance.getVolumesAbsolutePaths(includePrimary, includeRemoveable);
   }
 
   Future<Map<dynamic, dynamic>?> getVolumeSpacePrimary() {

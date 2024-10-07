@@ -1,5 +1,3 @@
-import 'dart:collection';
-
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:volume_info/volume_info.dart';
@@ -19,14 +17,18 @@ class VolumeSizes {
   double total = 0.0;
   double free = 0.0;
   double used = 0.0;
+  VolumeSizes(double total, double free, double used) {
+    this.total = total;
+    this.free = free;
+    this.used = used;
+  }
 }
 
 class _MyAppState extends State<MyApp> {
-  late VolumeInfo _volumeInfoPlugin;
+  final VolumeInfo _volumeInfoPlugin = VolumeInfo();
   late List<String>? _volumes;
-  late HashMap<String, bool> _primaryvolumes;
-  late HashMap<String, VolumeSizes> _volumesizes;
-
+  late Map<String, bool> _primaryvolumes = Map<String, bool>();
+  late Map<String, VolumeSizes> _volumesizes = Map<String, VolumeSizes>();
   bool _inited = false;
 
   @override
@@ -37,21 +39,86 @@ class _MyAppState extends State<MyApp> {
 
   // Platform messages are asynchronous, so we initialize in an async method.
   Future<void> initPlatformState() async {
-    _volumeInfoPlugin = VolumeInfo();
-    Future<List<dynamic>?> futureOfList = _volumeInfoPlugin.getVolumesAbsolutePaths(true, true);
-    _volumes = (await futureOfList)!.cast<String>();
-
-    _primaryvolumes = HashMap<String, bool>();
-    _volumesizes = HashMap<String, VolumeSizes>();
-    for (var absolutePath in _volumes!) {
-      var isPrimaryVolume = await _volumeInfoPlugin.isVolumePrimary(absolutePath);
-      _primaryvolumes[absolutePath] = isPrimaryVolume!;
-      var volumeSpaceInGB = await _volumeInfoPlugin.getVolumeSpaceInGB(absolutePath);
-
-    }
+    _inited = false;
+    await loadVolumes();
     setState(() {
       _inited = true;
     });
+  }
+
+  Future<List<String>?> loadVolumes() async {
+    _volumesizes.clear();
+    _primaryvolumes.clear();
+    Future<List<dynamic>?> futureOfList = _volumeInfoPlugin.getVolumesAbsolutePaths(true, true);
+    for (var absolutePath in _volumes!) {
+      var isPrimaryVolume = await _volumeInfoPlugin.isVolumePrimary(absolutePath);
+      _primaryvolumes[absolutePath] = isPrimaryVolume!;
+      Map? volumeSpaceInGB = await _volumeInfoPlugin.getVolumeSpaceInGB(absolutePath);
+      if (volumeSpaceInGB != null) {
+        _volumesizes[absolutePath] = VolumeSizes
+          (
+          volumeSpaceInGB[SpaceTotal],
+          volumeSpaceInGB[SpaceFree],
+          volumeSpaceInGB[SpaceUsed],
+        );
+      }
+    }
+    _volumes = (await futureOfList)!.cast<String>();
+    return _volumes;
+  }
+
+  Future<bool?> volumeExists(String absolutePath) async {
+    return await _volumeInfoPlugin.isVolumeAvailable(absolutePath);
+  }
+
+  Widget check4Volume() {
+    final String Volume2Check = "/storage/10F0-371C";
+    return Column(
+      children: [
+        FutureBuilder(
+          future: volumeExists(Volume2Check),
+          builder: (ctx, snapshot) {
+            if (snapshot.connectionState == ConnectionState.done) {
+              if (snapshot.hasError) {
+                return Center(
+                  child: Text(
+                    '${snapshot.error} occurred',
+                    style: TextStyle(fontSize: 18),
+                  ),
+                );
+              } else if (snapshot.hasData) {
+                final data = snapshot.data as bool;
+                if (data == true) {
+                  return Center(
+                    child: Text(
+                      "Volume is available",
+                      style: TextStyle(
+                        fontSize: 20,
+                        color: Colors.lightGreen
+                      ),
+                    ),
+                  );
+                } else {
+                  return Center(
+                    child: Text(
+                      "Volume does not exist",
+                      style: TextStyle(
+                          fontSize: 20,
+                        color: Colors.redAccent
+                      ),
+                    ),
+                  );
+                }
+              }
+            }
+            // Displaying LoadingSpinner to indicate waiting state
+            return Center(
+              child: CircularProgressIndicator(),
+            );
+          },
+        ),
+      ],
+    );
   }
 
   Widget details()  {
@@ -79,32 +146,20 @@ class _MyAppState extends State<MyApp> {
             const Text("Other volume")
         );
       }
-      /*
-      HashMap<String, double> volumeSpace = HashMap<String, double>();
-      _volumeInfoPlugin.getVolumeSpaceInGB(absolutePath).then((data) {
-        volumeSpace = data!;
-      });
-      children.add(
-          Text("Total: ${volumeSpace['total']}")
-      );
-      children.add(
-          Text("Free: ${volumeSpace['free']}")
-      );
-      children.add(
-          Text("Used: ${volumeSpace['used']}")
-      );
-       */
+      VolumeSizes? volumeSize = _volumesizes[absolutePath];
+      if (volumeSize != null) {
+        children.add(
+            Text("Total: ${volumeSize.total.round()} GB")
+        );
+        children.add(
+            Text("Free: ${volumeSize.free.round()} GB")
+        );
+        children.add(
+            Text("Used: ${volumeSize.used.round()} GB")
+        );
+      }
       children.add(
           const Text("---------------------------------")
-      );
-    }
-    var isVolumeAvailable = false;
-    _volumeInfoPlugin.isVolumeAvailable("absolutePath").then((data) {
-      isVolumeAvailable = data!;
-    });
-    if (isVolumeAvailable == true) {
-      children.add(
-          const Text("Special volume has been detected")
       );
     }
     return Column(
@@ -126,9 +181,14 @@ class _MyAppState extends State<MyApp> {
             ),
         ),
         body:
-          Center(
-            child: details(),
-          ),
+            SingleChildScrollView(
+              child: Column(
+                children: <Widget> [
+                  details(),
+                  check4Volume(),
+                ],
+              ),
+            ),
         ),
     );
   }

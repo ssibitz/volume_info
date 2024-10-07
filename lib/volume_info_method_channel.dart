@@ -1,4 +1,3 @@
-import 'dart:collection';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'volume_info_platform_interface.dart';
@@ -10,15 +9,22 @@ class MethodChannelVolumeInfo extends VolumeInfoPlatform {
   final methodChannel = const MethodChannel('volume_info');
 
   @override
+  Future<List<dynamic>?> getVolumesAbsolutePaths(bool includePrimary, bool includeRemoveable) async {
+    return await methodChannel.invokeMethod<List<dynamic>?>(
+        'getVolumesAbsolutePaths',  {'includePrimary': includePrimary, 'includeRemoveable': includeRemoveable,}
+    );
+  }
+
+  @override
   Future<bool?> isVolumeAvailable(String absolutePath) async {
-    return await methodChannel.invokeMethod<bool>(
+    return await methodChannel.invokeMethod<bool?>(
         'isVolumeAvailable',  {'absolutePath': absolutePath}
     );
   }
 
   @override
   Future<bool?> isVolumePrimary(String absolutePath) async {
-    return await methodChannel.invokeMethod<bool>(
+    return await methodChannel.invokeMethod<bool?>(
         'isVolumePrimary',  {'absolutePath': absolutePath}
     );
   }
@@ -31,14 +37,7 @@ class MethodChannelVolumeInfo extends VolumeInfoPlatform {
   }
 
   @override
-  Future<List<dynamic>?> getVolumesAbsolutePaths(bool includePrimary, bool includeRemoveable) async {
-    return await methodChannel.invokeMethod<List<dynamic>?>(
-        'getVolumesAbsolutePaths',  {'includePrimary': includePrimary, 'includeRemoveable': includeRemoveable,}
-    );
-  }
-
-  @override
   Future<Map<dynamic, dynamic>?> getVolumeSpacePrimary() async {
-    return await methodChannel.invokeMethod<Map<dynamic, dynamic>>('getVolumeSpacePrimary');
+    return await methodChannel.invokeMethod<Map<dynamic, dynamic>?>('getVolumeSpacePrimary');
   }
 }

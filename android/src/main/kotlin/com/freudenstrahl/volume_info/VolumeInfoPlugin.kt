@@ -18,7 +18,11 @@ class VolumeInfoPlugin: FlutterPlugin, MethodCallHandler {
   }
 
   override fun onMethodCall(call: MethodCall, result: Result) {
-    if (call.method == "isVolumeAvailable") {
+    if (call.method == "getVolumesAbsolutePaths") {
+      val includePrimary = call.argument<Boolean>("includePrimary")
+      val includeRemoveable = call.argument<Boolean>("includeRemoveable")
+      result.success(volumeInfo.getVolumesAbsolutePaths(includePrimary?:true, includeRemoveable?:true))
+    } else if (call.method == "isVolumeAvailable") {
       val absolutePath = call.argument<String>("absolutePath")
       result.success(volumeInfo.isVolumeAvailable(absolutePath?:""))
     } else if (call.method == "isVolumePrimary") {
@@ -27,10 +31,6 @@ class VolumeInfoPlugin: FlutterPlugin, MethodCallHandler {
     } else if (call.method == "getVolumeSpaceInGB") {
       val absolutePath = call.argument<String>("absolutePath")
       result.success(volumeInfo.getVolumeSpaceInGB(absolutePath?:""))
-    } else if (call.method == "getVolumesAbsolutePaths") {
-      val includePrimary = call.argument<Boolean>("includePrimary")
-      val includeRemoveable = call.argument<Boolean>("includeRemoveable")
-      result.success(volumeInfo.getVolumesAbsolutePaths(includePrimary?:true, includeRemoveable?:true))
     } else if (call.method == "getVolumeSpacePrimary") {
       result.success(volumeInfo.getVolumeSpacePrimary())
     } else {
