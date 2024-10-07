@@ -12,3 +12,6 @@ Refactored and optimized to get a list of all devices, spaces and test again pri
 
 0.0.5
 Making it easier to get information by using wrapper classes
+
+0.0.6
+Adding new functions to get primary path and uuid direct

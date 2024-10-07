@@ -74,6 +74,20 @@ class MethodChannelVolumeInfo extends VolumeInfoPlatform {
     return _getVolumeSpaceFromMap(volumeSpaceInGB);
   }
 
+  @override
+  Future<String?> getVolumeAbsolutePathPrimary() async {
+    return await methodChannel.invokeMethod<String?>(
+        'getVolumeAbsolutePathPrimary'
+    );
+  }
+
+  @override
+  Future<String?> getVolumeUUIDPrimary() async {
+    return await methodChannel.invokeMethod<String?>(
+        'getVolumeUUIDPrimary'
+    );
+  }
+
   VolumeSpace? _getVolumeSpaceFromMap(Map? volumeSpaceInGB) {
     VolumeSpace? result = VolumeSpace(0.0, 0.0, 0.0);
     if (volumeSpaceInGB != null) {

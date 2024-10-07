@@ -43,4 +43,13 @@ class VolumeInfo {
   Future<VolumeSpace?> getVolumeSpacePrimary() {
     return VolumeInfoPlatform.instance.getVolumeSpacePrimary();
   }
+
+  Future<String?> getVolumeAbsolutePathPrimary() {
+    return VolumeInfoPlatform.instance.getVolumeAbsolutePathPrimary();
+  }
+
+  Future<String?> getVolumeUUIDPrimary() {
+    return VolumeInfoPlatform.instance.getVolumeUUIDPrimary();
+  }
+
 }

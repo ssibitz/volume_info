@@ -22,7 +22,7 @@ class VolumeInfo(private var context: Context) {
                 continue
             }
             if (storageVolume.uuid == null) {
-                result.add(StorageManager.UUID_DEFAULT.toString())
+                result.add(getVolumeUUIDPrimary())
             } else {
                 result.add(storageVolume.uuid!!)
             }
@@ -85,7 +85,15 @@ class VolumeInfo(private var context: Context) {
     }
 
     fun getVolumeSpacePrimary(): MutableMap<String, Double> {
-        return getVolumeSpaceInGB(StorageManager.UUID_DEFAULT.toString())
+        return getVolumeSpaceInGB(getVolumeUUIDPrimary())
+    }
+
+    fun getVolumeAbsolutePathPrimary(): String {
+        return getVolumeAbsolutePath(getVolumeUUIDPrimary())
+    }
+
+    fun getVolumeUUIDPrimary(): String {
+        return StorageManager.UUID_DEFAULT.toString()
     }
 
     private fun getStorageVolumes():List<StorageVolume> {
@@ -105,7 +113,7 @@ class VolumeInfo(private var context: Context) {
         var result: StorageVolume? = null
         for (storageVolume in getStorageVolumes()) {
             if (storageVolume.uuid == null) {
-                if (uuid == StorageManager.UUID_DEFAULT.toString()) {
+                if (uuid == getVolumeUUIDPrimary()) {
                     result = storageVolume
                     break
                 }
