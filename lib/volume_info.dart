@@ -20,13 +20,13 @@ class VolumeSpace {
     this.usedInGB = usedInGB;
     // Transform to percent
     if (this.totalInGB > 0.0) {
-      this.usedInPercent = this.usedInGB / this.totalInGB;
-      if (this.usedInPercent<0.0 || this.usedInPercent>1.0) {
-        this.usedInPercent = 0.0;
+      usedInPercent = this.usedInGB / this.totalInGB;
+      if (usedInPercent<0.0 || usedInPercent>1.0) {
+        usedInPercent = 0.0;
       }
-      this.freeInPercent = this.freeInGB / this.totalInGB;
-      if (this.freeInPercent<0.0 || this.freeInPercent>1.0) {
-        this.freeInPercent = 0.0;
+      freeInPercent = this.freeInGB / this.totalInGB;
+      if (freeInPercent<0.0 || freeInPercent>1.0) {
+        freeInPercent = 0.0;
       }
     }
   }

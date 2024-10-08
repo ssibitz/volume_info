@@ -27,8 +27,8 @@ class _MyAppState extends State<MyApp> {
     _volumesDetails.clear();
     List<String>? volumes = await _volumeInfoPlugin.getVolumesUUIDs(true, true);
     for (var uuid in volumes!) {
-      VolumeSpace _volumeSpace = (await _volumeInfoPlugin.getVolumeSpace(uuid))!;
-      _volumesDetails[uuid] = _volumeSpace;
+      VolumeSpace volumeSpace = (await _volumeInfoPlugin.getVolumeSpace(uuid))!;
+      _volumesDetails[uuid] = volumeSpace;
     }
     setState(() {});
   }

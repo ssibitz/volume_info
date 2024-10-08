@@ -66,18 +66,18 @@ class MethodChannelVolumeInfo extends VolumeInfoPlatform {
 
   @override
   Future<VolumeSpace?> getVolumeSpace(String uuid) async {
-    Map? _volumeSpace = await methodChannel.invokeMethod<Map<dynamic, dynamic>?>(
+    Map? volumeSpace = await methodChannel.invokeMethod<Map<dynamic, dynamic>?>(
         'getVolumeSpace',  {'uuid': uuid}
     );
-    return _getVolumeSpaceFromMap(_volumeSpace);
+    return _getVolumeSpaceFromMap(volumeSpace);
   }
 
   @override
   Future<VolumeSpace?> getVolumeSpacePrimary() async {
-    Map? _volumeSpace = await methodChannel.invokeMethod<Map<dynamic, dynamic>?>(
+    Map? volumeSpace = await methodChannel.invokeMethod<Map<dynamic, dynamic>?>(
         'getVolumeSpacePrimary'
     );
-    return _getVolumeSpaceFromMap(_volumeSpace);
+    return _getVolumeSpaceFromMap(volumeSpace);
   }
 
   @override
