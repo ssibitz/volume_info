@@ -4,9 +4,15 @@ import 'package:volume_info/volume_info.dart';
 import 'volume_info_platform_interface.dart';
 
 class VolumeSpaceType {
-  static String get SpaceTotal => "total";
-  static String get SpaceFree => "free";
-  static String get SpaceUsed => "used";
+  static String get uuid => "uuid";
+  static String get absolutePath => "absolutePath";
+  static String get state => "state";
+  static String get isAvailable => "isAvailable";
+  static String get isRemoveable => "isRemoveable";
+  static String get isPrimary => "isPrimary";
+  static String get totalInGB => "total";
+  static String get freeInGB => "free";
+  static String get usedInGB => "used";
 }
 
 /// An implementation of [VolumeInfoPlatform] that uses method channels.
@@ -59,19 +65,19 @@ class MethodChannelVolumeInfo extends VolumeInfoPlatform {
   }
 
   @override
-  Future<VolumeSpace?> getVolumeSpaceInGB(String uuid) async {
-    Map? volumeSpaceInGB = await methodChannel.invokeMethod<Map<dynamic, dynamic>?>(
-        'getVolumeSpaceInGB',  {'uuid': uuid}
+  Future<VolumeSpace?> getVolumeSpace(String uuid) async {
+    Map? _volumeSpace = await methodChannel.invokeMethod<Map<dynamic, dynamic>?>(
+        'getVolumeSpace',  {'uuid': uuid}
     );
-    return _getVolumeSpaceFromMap(volumeSpaceInGB);
+    return _getVolumeSpaceFromMap(_volumeSpace);
   }
 
   @override
   Future<VolumeSpace?> getVolumeSpacePrimary() async {
-    Map? volumeSpaceInGB = await methodChannel.invokeMethod<Map<dynamic, dynamic>?>(
+    Map? _volumeSpace = await methodChannel.invokeMethod<Map<dynamic, dynamic>?>(
         'getVolumeSpacePrimary'
     );
-    return _getVolumeSpaceFromMap(volumeSpaceInGB);
+    return _getVolumeSpaceFromMap(_volumeSpace);
   }
 
   @override
@@ -89,18 +95,56 @@ class MethodChannelVolumeInfo extends VolumeInfoPlatform {
   }
 
   VolumeSpace? _getVolumeSpaceFromMap(Map? volumeSpaceInGB) {
-    VolumeSpace? result = VolumeSpace(0.0, 0.0, 0.0);
+    // Advanced information
+    String uuid = "";
+    String absolutePath = "";
+    String state = "";
+    bool isAvailable = false;
+    bool isRemoveable = false;
+    bool isPrimary = false;
+    // Volume space information
+    double totalInGB = 0.0;
+    double freeInGB = 0.0;
+    double usedInGB = 0.0;
+    // Get data from map
     if (volumeSpaceInGB != null) {
-      if (volumeSpaceInGB.containsKey(VolumeSpaceType.SpaceTotal)) {
-        result.totalInGB = volumeSpaceInGB[VolumeSpaceType.SpaceTotal];
+      if (volumeSpaceInGB.containsKey(VolumeSpaceType.uuid)) {
+        uuid = volumeSpaceInGB[VolumeSpaceType.uuid];
       }
-      if (volumeSpaceInGB.containsKey(VolumeSpaceType.SpaceFree)) {
-        result.freeInGB = volumeSpaceInGB[VolumeSpaceType.SpaceFree];
+      if (volumeSpaceInGB.containsKey(VolumeSpaceType.absolutePath)) {
+        absolutePath = volumeSpaceInGB[VolumeSpaceType.absolutePath];
       }
-      if (volumeSpaceInGB.containsKey(VolumeSpaceType.SpaceUsed)) {
-        result.usedInGB = volumeSpaceInGB[VolumeSpaceType.SpaceUsed];
+      if (volumeSpaceInGB.containsKey(VolumeSpaceType.state)) {
+        state = volumeSpaceInGB[VolumeSpaceType.state];
+      }
+      if (volumeSpaceInGB.containsKey(VolumeSpaceType.isAvailable)) {
+        isAvailable = (volumeSpaceInGB[VolumeSpaceType.isAvailable]).toString().toLowerCase() == "true";
+      }
+      if (volumeSpaceInGB.containsKey(VolumeSpaceType.isRemoveable)) {
+        isRemoveable = (volumeSpaceInGB[VolumeSpaceType.isRemoveable]).toString().toLowerCase() == "true";
+      }
+      if (volumeSpaceInGB.containsKey(VolumeSpaceType.isPrimary)) {
+        isPrimary = (volumeSpaceInGB[VolumeSpaceType.isPrimary]).toString().toLowerCase() == "true";
+      }
+      if (volumeSpaceInGB.containsKey(VolumeSpaceType.totalInGB)) {
+        totalInGB = double.parse(volumeSpaceInGB[VolumeSpaceType.totalInGB].toString());
+      }
+      if (volumeSpaceInGB.containsKey(VolumeSpaceType.freeInGB)) {
+        freeInGB = double.parse(volumeSpaceInGB[VolumeSpaceType.freeInGB].toString());
+      }
+      if (volumeSpaceInGB.containsKey(VolumeSpaceType.usedInGB)) {
+        usedInGB = double.parse(volumeSpaceInGB[VolumeSpaceType.usedInGB].toString());
       }
     }
+    // Assign volume space to result and calc percentage
+    VolumeSpace? result = VolumeSpace(totalInGB, freeInGB, usedInGB);
+    // Add advanced information
+    result.uuid = uuid;
+    result.absolutePath = absolutePath;
+    result.state = state;
+    result.isAvailable = isAvailable;
+    result.isRemoveable = isRemoveable;
+    result.isPrimary = isPrimary;
     return result;
   }
 }

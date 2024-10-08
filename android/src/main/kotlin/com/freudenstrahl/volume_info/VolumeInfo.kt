@@ -9,9 +9,17 @@ import kotlin.math.round
 const val KiB = 1_024L
 const val GiB = KiB * KiB * KiB
 
-const val SpaceTotal = "total"
-const val SpaceFree = "free"
-const val SpaceUsed = "used"
+// Volume space information
+const val VolumeTotal = "total"
+const val VolumeFree = "free"
+const val VolumeUsed = "used"
+// Advanced volume information
+const val VolumeUUID = "uuid"
+const val VolumeAbsolutePath = "absolutePath"
+const val VolumeState = "state"
+const val VolumeIsAvailable = "isAvailable"
+const val VolumeIsRemoveable = "isRemoveable"
+const val VolumeIsPrimary = "isPrimary"
 
 class VolumeInfo(private var context: Context) {
 
@@ -55,8 +63,8 @@ class VolumeInfo(private var context: Context) {
         return dir?.absolutePath?:""
     }
 
-    fun getVolumeSpaceInGB(uuid: String): MutableMap<String, Double> {
-        val result = getEmptyVolumeSpaceInGB()
+    fun getVolumeSpace(uuid: String): MutableMap<String, String> {
+        val result = getEmptyVolumeSpace()
         val storageVolume = this.getStorageVolumeByUUID(uuid)
         if (storageVolume != null) {
             var volumeSpaceTotal = 0.0
@@ -77,15 +85,23 @@ class VolumeInfo(private var context: Context) {
                     volumeSpaceUsed = volumeSpaceTotal - volumeSpaceFree
                 }
             }
-            result[SpaceTotal] = volumeSpaceTotal
-            result[SpaceFree] = volumeSpaceFree
-            result[SpaceUsed] = volumeSpaceUsed
+            // Volume space information
+            result[VolumeTotal] = volumeSpaceTotal.toString()
+            result[VolumeFree] = volumeSpaceFree.toString()
+            result[VolumeUsed] = volumeSpaceUsed.toString()
+            // Advanced volume information
+            result[VolumeUUID] = uuid
+            result[VolumeAbsolutePath] = getVolumeAbsolutePath(uuid)
+            result[VolumeState] = getVolumeState(uuid)
+            result[VolumeIsAvailable] = (true).toString()
+            result[VolumeIsRemoveable] = (storageVolume.isRemovable).toString()
+            result[VolumeIsPrimary] = (storageVolume.isPrimary).toString()
         }
         return result
     }
 
-    fun getVolumeSpacePrimary(): MutableMap<String, Double> {
-        return getVolumeSpaceInGB(getVolumeUUIDPrimary())
+    fun getVolumeSpacePrimary(): MutableMap<String, String> {
+        return getVolumeSpace(getVolumeUUIDPrimary())
     }
 
     fun getVolumeAbsolutePathPrimary(): String {
@@ -101,11 +117,19 @@ class VolumeInfo(private var context: Context) {
         return mStorageManager.storageVolumes
     }
 
-    private fun getEmptyVolumeSpaceInGB(): MutableMap<String, Double> {
-        val result = mutableMapOf<String, Double>()
-        result[SpaceTotal] = 0.0
-        result[SpaceFree] = 0.0
-        result[SpaceUsed] = 0.0
+    private fun getEmptyVolumeSpace(): MutableMap<String, String> {
+        val result = mutableMapOf<String, String>()
+        // Volume space information
+        result[VolumeTotal] = (0.0).toString()
+        result[VolumeFree] = (0.0).toString()
+        result[VolumeUsed] = (0.0).toString()
+        // Advanced volume information
+        result[VolumeUUID] = ""
+        result[VolumeAbsolutePath] = ""
+        result[VolumeState] = ""
+        result[VolumeIsAvailable] = (false).toString()
+        result[VolumeIsRemoveable] = (false).toString()
+        result[VolumeIsPrimary] = (false).toString()
         return result
     }
 

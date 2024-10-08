@@ -15,3 +15,6 @@ Making it easier to get information by using wrapper classes
 
 0.0.6
 Adding new functions to get primary path and uuid direct
+
+0.0.7
+Adding more attributes to VolumeSpace class to avoid multiple calls

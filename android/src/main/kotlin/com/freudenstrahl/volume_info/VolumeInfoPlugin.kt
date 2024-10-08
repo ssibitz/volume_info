@@ -34,8 +34,8 @@ class VolumeInfoPlugin: FlutterPlugin, MethodCallHandler {
       result.success(volumeInfo.getVolumeState(uuid?:""))
     } else if (call.method == "getVolumeAbsolutePath") {
       result.success(volumeInfo.getVolumeAbsolutePath(uuid?:""))
-    } else if (call.method == "getVolumeSpaceInGB") {
-      result.success(volumeInfo.getVolumeSpaceInGB(uuid?:""))
+    } else if (call.method == "getVolumeSpace") {
+      result.success(volumeInfo.getVolumeSpace(uuid?:""))
     } else if (call.method == "getVolumeSpacePrimary") {
       result.success(volumeInfo.getVolumeSpacePrimary())
     } else if (call.method == "getVolumeAbsolutePathPrimary") {

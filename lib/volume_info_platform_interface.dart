@@ -38,8 +38,8 @@ abstract class VolumeInfoPlatform extends PlatformInterface {
     throw UnimplementedError('getVolumeAbsolutePath() has not been implemented.');
   }
 
-  Future<VolumeSpace?> getVolumeSpaceInGB(String uuid) {
-    throw UnimplementedError('getVolumeSpaceInGB() has not been implemented.');
+  Future<VolumeSpace?> getVolumeSpace(String uuid) {
+    throw UnimplementedError('getVolumeSpace() has not been implemented.');
   }
 
   Future<VolumeSpace?> getVolumeSpacePrimary() {

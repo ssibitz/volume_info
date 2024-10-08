@@ -13,24 +13,9 @@ class MyApp extends StatefulWidget {
   State<MyApp> createState() => _MyAppState();
 }
 
-class VolumeInfoDetails {
-  late bool isVolumePrimary;
-  late bool isVolumeRemoveable;
-  late String volumeState;
-  late String volumeDirectory;
-  late VolumeSpace volumeSpace;
-  VolumeInfoDetails(bool isVolumePrimary, bool isVolumeRemoveable, String volumeState, String volumeDirectory, VolumeSpace volumeSpace) {
-    this.isVolumePrimary = isVolumePrimary;
-    this.isVolumeRemoveable = isVolumeRemoveable;
-    this.volumeState = volumeState;
-    this.volumeDirectory = volumeDirectory;
-    this.volumeSpace = volumeSpace;
-  }
-}
-
 class _MyAppState extends State<MyApp> {
   final VolumeInfo _volumeInfoPlugin = VolumeInfo();
-  late final Map<String, VolumeInfoDetails> _volumesDetails = <String, VolumeInfoDetails>{};
+  late final Map<String, VolumeSpace> _volumesDetails = <String, VolumeSpace>{};
 
   @override
   void initState() {
@@ -42,13 +27,8 @@ class _MyAppState extends State<MyApp> {
     _volumesDetails.clear();
     List<String>? volumes = await _volumeInfoPlugin.getVolumesUUIDs(true, true);
     for (var uuid in volumes!) {
-      bool isVolumePrimary = (await _volumeInfoPlugin.isVolumePrimary(uuid))!;
-      bool isVolumeRemoveable = (await _volumeInfoPlugin.isRemoveable(uuid))!;
-      String volumeState = (await _volumeInfoPlugin.getVolumeState(uuid))!;
-      String volumeDirectory = (await _volumeInfoPlugin.getVolumeAbsolutePath(uuid))!;
-      VolumeSpace volumeSpace = (await _volumeInfoPlugin.getVolumeSpaceInGB(uuid))!;
-      // Store all information(s) into a map
-      _volumesDetails[uuid] = VolumeInfoDetails(isVolumePrimary, isVolumeRemoveable, volumeState, volumeDirectory, volumeSpace);
+      VolumeSpace _volumeSpace = (await _volumeInfoPlugin.getVolumeSpace(uuid))!;
+      _volumesDetails[uuid] = _volumeSpace;
     }
     setState(() {});
   }
@@ -70,7 +50,7 @@ class _MyAppState extends State<MyApp> {
     // Use first removeable volume for check
     String volume2Check = "";
     for (var uuid in _volumesDetails.keys) {
-      if (_volumesDetails[uuid]!.isVolumeRemoveable) {
+      if (_volumesDetails[uuid]!.isRemoveable) {
         volume2Check = uuid;
         break;
       }
@@ -140,12 +120,12 @@ class _MyAppState extends State<MyApp> {
           Text("Volumes UUID: $uuid")
       );
       children.add(
-          Text("Path: ${_volumesDetails[uuid]!.volumeDirectory}")
+          Text("Path: ${_volumesDetails[uuid]!.absolutePath}")
       );
       children.add(
-          Text("State: ${_volumesDetails[uuid]!.volumeState}")
+          Text("State: ${_volumesDetails[uuid]!.state}")
       );
-      if (_volumesDetails[uuid]!.isVolumePrimary == true) {
+      if (_volumesDetails[uuid]!.isPrimary == true) {
         children.add(
           const Text("Primary volume")
         );
@@ -154,7 +134,7 @@ class _MyAppState extends State<MyApp> {
             const Text("Other volume")
         );
       }
-      if (_volumesDetails[uuid]!.isVolumeRemoveable == true) {
+      if (_volumesDetails[uuid]!.isRemoveable == true) {
         children.add(
             const Text("Removeable volume")
         );
@@ -163,15 +143,14 @@ class _MyAppState extends State<MyApp> {
             const Text("Non removeable volume")
         );
       }
-      VolumeSpace? volumeSpace = _volumesDetails[uuid]!.volumeSpace;
       children.add(
-          Text("Total: ${volumeSpace.totalInGB.round()} GB")
+          Text("Total: ${_volumesDetails[uuid]!.totalInGB.round()} GB")
       );
       children.add(
-          Text("Free: ${volumeSpace.freeInGB.round()} GB")
+          Text("Free: ${_volumesDetails[uuid]!.freeInGB.round()} GB")
       );
       children.add(
-          Text("Used: ${volumeSpace.usedInGB.round()} GB")
+          Text("Used: ${_volumesDetails[uuid]!.usedInGB.round()} GB")
       );
           children.add(
           const Text("---------------------------------")
