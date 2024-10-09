@@ -5,6 +5,7 @@ import android.content.Context
 import android.os.Environment
 import android.os.storage.StorageManager
 import android.os.storage.StorageVolume
+import java.io.File
 import kotlin.math.round
 
 // Constants
@@ -21,6 +22,8 @@ const val VolumeState = "state"
 const val VolumeIsAvailable = "isAvailable"
 const val VolumeIsRemoveable = "isRemoveable"
 const val VolumeIsPrimary = "isPrimary"
+// Storage path prefix
+const val StoragePrefix = "/storage"
 
 @Suppress("MemberVisibilityCanBePrivate", "unused")
 class VolumeInfo(private var context: Context) {
@@ -57,8 +60,7 @@ class VolumeInfo(private var context: Context) {
     }
 
     fun getVolumeAbsolutePath(uuid: String): String {
-        val dir = this.getStorageVolumeByUUID(uuid)?.directory
-        return dir?.absolutePath?:""
+        return this.getVolumeDirectory(uuid)?.absolutePath?:""
     }
 
     fun getVolumeInfo(uuid: String): MutableMap<String, String> {
@@ -75,7 +77,7 @@ class VolumeInfo(private var context: Context) {
                 val usedSpace: Long = totalSpace - mStorageStatsManager.getFreeBytes(StorageManager.UUID_DEFAULT)
                 result.putAll(getVolumeSpacesMap(totalSpace.toDouble(), usedSpace.toDouble()))
             } else {
-                val dir = storageVolume.directory
+                val dir = this.getVolumeDirectory(uuid)
                 if (dir != null) {
                     result.putAll(getVolumeSpacesMap(dir.totalSpace.toDouble(), dir.freeSpace.toDouble()))
                 }
@@ -170,6 +172,23 @@ class VolumeInfo(private var context: Context) {
         result[VolumeTotal] = volumeSpaceTotalGB.toString()
         result[VolumeFree] = volumeSpaceFreeGB.toString()
         result[VolumeUsed] = volumeSpaceUsedGB.toString()
+        return result
+    }
+
+
+
+    private fun getVolumeDirectory(uuid: String): File? {
+        var result: File? = null
+        if (uuid == getVolumeUUIDPrimary()) {
+            result = File("${StoragePrefix}/emulated/0")
+        } else {
+            val mStorageManager = context.getSystemService(Context.STORAGE_SERVICE) as StorageManager
+            val externalDir = File("${StoragePrefix}/$uuid")
+            val storageVolume = mStorageManager.getStorageVolume(externalDir)
+            if (storageVolume != null && storageVolume.uuid == uuid) {
+                result = externalDir
+            }
+        }
         return result
     }
 }

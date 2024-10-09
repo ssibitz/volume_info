@@ -21,3 +21,6 @@ Adding more attributes to VolumeSpace class to avoid multiple calls
 
 0.0.8
 Refactored and added new function getVolumeInfo
+
+0.0.9
+Making plugin available from Android 8 / OREO (API 26)

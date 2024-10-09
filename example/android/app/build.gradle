@@ -16,7 +16,7 @@ android {
 
     defaultConfig {
         applicationId = "com.freudenstrahl.volume_info_example"
-        minSdk = 30
+        minSdk = 26
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
