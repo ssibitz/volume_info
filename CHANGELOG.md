@@ -18,3 +18,6 @@ Adding new functions to get primary path and uuid direct
 
 0.0.7
 Adding more attributes to VolumeSpace class to avoid multiple calls
+
+0.0.8
+Refactored and added new function getVolumeInfo

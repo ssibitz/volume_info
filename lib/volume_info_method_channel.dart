@@ -65,6 +65,14 @@ class MethodChannelVolumeInfo extends VolumeInfoPlatform {
   }
 
   @override
+  Future<VolumeSpaceInfo?> getVolumeInfo(String uuid) async {
+    Map? volumeInfo = await methodChannel.invokeMethod<Map<dynamic, dynamic>?>(
+        'getVolumeInfo',  {'uuid': uuid}
+    );
+    return (_getVolumeInfoFromMap(volumeInfo) as VolumeSpaceInfo);
+  }
+
+  @override
   Future<VolumeSpace?> getVolumeSpace(String uuid) async {
     Map? volumeSpace = await methodChannel.invokeMethod<Map<dynamic, dynamic>?>(
         'getVolumeSpace',  {'uuid': uuid}
@@ -94,57 +102,55 @@ class MethodChannelVolumeInfo extends VolumeInfoPlatform {
     );
   }
 
-  VolumeSpace? _getVolumeSpaceFromMap(Map? volumeSpaceInGB) {
-    // Advanced information
-    String uuid = "";
-    String absolutePath = "";
-    String state = "";
-    bool isAvailable = false;
-    bool isRemoveable = false;
-    bool isPrimary = false;
+  // Advanced information
+  VolumeSpace? _getVolumeInfoFromMap(Map? volumeSpaceInfoMap) {
+    VolumeSpace? result = VolumeSpace(0.0, 0.0, 0.0);
+    if (volumeSpaceInfoMap != null) {
+      if (volumeSpaceInfoMap.containsKey(VolumeSpaceType.uuid)) {
+        result.uuid = volumeSpaceInfoMap[VolumeSpaceType.uuid];
+      }
+      if (volumeSpaceInfoMap.containsKey(VolumeSpaceType.absolutePath)) {
+        result.absolutePath = volumeSpaceInfoMap[VolumeSpaceType.absolutePath];
+      }
+      if (volumeSpaceInfoMap.containsKey(VolumeSpaceType.state)) {
+        result.state = volumeSpaceInfoMap[VolumeSpaceType.state];
+      }
+      if (volumeSpaceInfoMap.containsKey(VolumeSpaceType.isAvailable)) {
+        result.isAvailable = (volumeSpaceInfoMap[VolumeSpaceType.isAvailable]).toString().toLowerCase() == "true";
+      }
+      if (volumeSpaceInfoMap.containsKey(VolumeSpaceType.isRemoveable)) {
+        result.isRemoveable = (volumeSpaceInfoMap[VolumeSpaceType.isRemoveable]).toString().toLowerCase() == "true";
+      }
+      if (volumeSpaceInfoMap.containsKey(VolumeSpaceType.isPrimary)) {
+        result.isPrimary = (volumeSpaceInfoMap[VolumeSpaceType.isPrimary]).toString().toLowerCase() == "true";
+      }
+    }
+    return result;
+  }
+
+  VolumeSpace? _getVolumeSpaceFromMap(Map? volumeSpaceMap) {
     // Volume space information
     double totalInGB = 0.0;
     double freeInGB = 0.0;
     double usedInGB = 0.0;
     // Get data from map
-    if (volumeSpaceInGB != null) {
-      if (volumeSpaceInGB.containsKey(VolumeSpaceType.uuid)) {
-        uuid = volumeSpaceInGB[VolumeSpaceType.uuid];
+    if (volumeSpaceMap != null) {
+      if (volumeSpaceMap.containsKey(VolumeSpaceType.totalInGB)) {
+        totalInGB = double.parse(volumeSpaceMap[VolumeSpaceType.totalInGB].toString());
       }
-      if (volumeSpaceInGB.containsKey(VolumeSpaceType.absolutePath)) {
-        absolutePath = volumeSpaceInGB[VolumeSpaceType.absolutePath];
+      if (volumeSpaceMap.containsKey(VolumeSpaceType.freeInGB)) {
+        freeInGB = double.parse(volumeSpaceMap[VolumeSpaceType.freeInGB].toString());
       }
-      if (volumeSpaceInGB.containsKey(VolumeSpaceType.state)) {
-        state = volumeSpaceInGB[VolumeSpaceType.state];
-      }
-      if (volumeSpaceInGB.containsKey(VolumeSpaceType.isAvailable)) {
-        isAvailable = (volumeSpaceInGB[VolumeSpaceType.isAvailable]).toString().toLowerCase() == "true";
-      }
-      if (volumeSpaceInGB.containsKey(VolumeSpaceType.isRemoveable)) {
-        isRemoveable = (volumeSpaceInGB[VolumeSpaceType.isRemoveable]).toString().toLowerCase() == "true";
-      }
-      if (volumeSpaceInGB.containsKey(VolumeSpaceType.isPrimary)) {
-        isPrimary = (volumeSpaceInGB[VolumeSpaceType.isPrimary]).toString().toLowerCase() == "true";
-      }
-      if (volumeSpaceInGB.containsKey(VolumeSpaceType.totalInGB)) {
-        totalInGB = double.parse(volumeSpaceInGB[VolumeSpaceType.totalInGB].toString());
-      }
-      if (volumeSpaceInGB.containsKey(VolumeSpaceType.freeInGB)) {
-        freeInGB = double.parse(volumeSpaceInGB[VolumeSpaceType.freeInGB].toString());
-      }
-      if (volumeSpaceInGB.containsKey(VolumeSpaceType.usedInGB)) {
-        usedInGB = double.parse(volumeSpaceInGB[VolumeSpaceType.usedInGB].toString());
+      if (volumeSpaceMap.containsKey(VolumeSpaceType.usedInGB)) {
+        usedInGB = double.parse(volumeSpaceMap[VolumeSpaceType.usedInGB].toString());
       }
     }
     // Assign volume space to result and calc percentage
-    VolumeSpace? result = VolumeSpace(totalInGB, freeInGB, usedInGB);
-    // Add advanced information
-    result.uuid = uuid;
-    result.absolutePath = absolutePath;
-    result.state = state;
-    result.isAvailable = isAvailable;
-    result.isRemoveable = isRemoveable;
-    result.isPrimary = isPrimary;
+    VolumeSpace? result = _getVolumeInfoFromMap(volumeSpaceMap);
+    result?.totalInGB = totalInGB;
+    result?.freeInGB = freeInGB;
+    result?.usedInGB = usedInGB;
+    result?.calcPercentages();
     return result;
   }
 }

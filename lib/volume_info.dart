@@ -1,30 +1,32 @@
 import 'volume_info_platform_interface.dart';
 
-class VolumeSpace {
-  // Volume space information
-  double totalInGB = 0.0;
-  double freeInGB = 0.0;
-  double usedInGB = 0.0;
-  double freeInPercent = 0.0;
-  double usedInPercent = 0.0;
-  // Advanced information
+// Advanced information
+class VolumeSpaceInfo {
   String uuid = "";
   String absolutePath = "";
   String state = "";
   bool isAvailable = false;
   bool isRemoveable = false;
   bool isPrimary = false;
-  VolumeSpace(double totalInGB, double freeInGB, double usedInGB) {
-    this.totalInGB = totalInGB;
-    this.freeInGB = freeInGB;
-    this.usedInGB = usedInGB;
-    // Transform to percent
-    if (this.totalInGB > 0.0) {
-      usedInPercent = this.usedInGB / this.totalInGB;
+}
+
+// Volume space information
+class VolumeSpace extends VolumeSpaceInfo {
+  double totalInGB = 0.0;
+  double freeInGB = 0.0;
+  double usedInGB = 0.0;
+  double freeInPercent = 0.0;
+  double usedInPercent = 0.0;
+  VolumeSpace(this.totalInGB, this.freeInGB, this.usedInGB) {
+    calcPercentages();
+  }
+  void calcPercentages() {
+    if (totalInGB > 0.0) {
+      usedInPercent = usedInGB / totalInGB;
       if (usedInPercent<0.0 || usedInPercent>1.0) {
         usedInPercent = 0.0;
       }
-      freeInPercent = this.freeInGB / this.totalInGB;
+      freeInPercent = freeInGB / totalInGB;
       if (freeInPercent<0.0 || freeInPercent>1.0) {
         freeInPercent = 0.0;
       }
@@ -55,6 +57,10 @@ class VolumeInfo {
 
   Future<String?> getVolumeAbsolutePath(String uuid) {
     return VolumeInfoPlatform.instance.getVolumeAbsolutePath(uuid);
+  }
+
+  Future<VolumeSpaceInfo?> getVolumeInfo(String uuid) {
+    return VolumeInfoPlatform.instance.getVolumeInfo(uuid);
   }
 
   Future<VolumeSpace?> getVolumeSpace(String uuid) {

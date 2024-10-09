@@ -42,6 +42,10 @@ abstract class VolumeInfoPlatform extends PlatformInterface {
     throw UnimplementedError('getVolumeSpace() has not been implemented.');
   }
 
+  Future<VolumeSpaceInfo?> getVolumeInfo(String uuid) {
+    throw UnimplementedError('getVolumeInfo() has not been implemented.');
+  }
+
   Future<VolumeSpace?> getVolumeSpacePrimary() {
     throw UnimplementedError('getVolumeSpacePrimary() has not been implemented.');
   }

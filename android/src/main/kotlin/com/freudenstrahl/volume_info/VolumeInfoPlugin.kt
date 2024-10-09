@@ -22,28 +22,43 @@ class VolumeInfoPlugin: FlutterPlugin, MethodCallHandler {
     val includeRemoveable = call.argument<Boolean>("includeRemoveable")
     val uuid = call.argument<String>("uuid")
     // Return result by method name
-    if (call.method == "getVolumesUUIDs") {
-      result.success(volumeInfo.getVolumesUUIDs(includePrimary?:true, includeRemoveable?:true))
-    } else if (call.method == "isVolumeAvailable") {
-      result.success(volumeInfo.isVolumeAvailable(uuid?:""))
-    } else if (call.method == "isVolumePrimary") {
-      result.success(volumeInfo.isVolumePrimary(uuid?:""))
-    } else if (call.method == "isRemoveable") {
-      result.success(volumeInfo.isRemoveable(uuid?:""))
-    } else if (call.method == "getVolumeState") {
-      result.success(volumeInfo.getVolumeState(uuid?:""))
-    } else if (call.method == "getVolumeAbsolutePath") {
-      result.success(volumeInfo.getVolumeAbsolutePath(uuid?:""))
-    } else if (call.method == "getVolumeSpace") {
-      result.success(volumeInfo.getVolumeSpace(uuid?:""))
-    } else if (call.method == "getVolumeSpacePrimary") {
-      result.success(volumeInfo.getVolumeSpacePrimary())
-    } else if (call.method == "getVolumeAbsolutePathPrimary") {
-      result.success(volumeInfo.getVolumeAbsolutePathPrimary())
-    } else if (call.method == "getVolumeUUIDPrimary") {
-      result.success(volumeInfo.getVolumeUUIDPrimary())
-    } else {
-      result.notImplemented()
+    when (call.method) {
+        "getVolumesUUIDs" -> {
+          result.success(volumeInfo.getVolumesUUIDs(includePrimary?:true, includeRemoveable?:true))
+        }
+        "isVolumeAvailable" -> {
+          result.success(volumeInfo.isVolumeAvailable(uuid?:""))
+        }
+        "isVolumePrimary" -> {
+          result.success(volumeInfo.isVolumePrimary(uuid?:""))
+        }
+        "isRemoveable" -> {
+          result.success(volumeInfo.isRemoveable(uuid?:""))
+        }
+        "getVolumeState" -> {
+          result.success(volumeInfo.getVolumeState(uuid?:""))
+        }
+        "getVolumeAbsolutePath" -> {
+          result.success(volumeInfo.getVolumeAbsolutePath(uuid?:""))
+        }
+        "getVolumeInfo" -> {
+          result.success(volumeInfo.getVolumeInfo(uuid?:""))
+        }
+        "getVolumeSpace" -> {
+          result.success(volumeInfo.getVolumeSpace(uuid?:""))
+        }
+        "getVolumeSpacePrimary" -> {
+          result.success(volumeInfo.getVolumeSpacePrimary())
+        }
+        "getVolumeAbsolutePathPrimary" -> {
+          result.success(volumeInfo.getVolumeAbsolutePathPrimary())
+        }
+        "getVolumeUUIDPrimary" -> {
+          result.success(volumeInfo.getVolumeUUIDPrimary())
+        }
+        else -> {
+          result.notImplemented()
+        }
     }
   }
 
