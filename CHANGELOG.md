@@ -25,5 +25,5 @@ Refactored and added new function getVolumeInfo
 0.0.9
 Making plugin available from Android 8 / OREO (API 26)
 
-0.0.9
+0.0.10
 Using Android 9 / Pie (API 28) instead for better compability 
