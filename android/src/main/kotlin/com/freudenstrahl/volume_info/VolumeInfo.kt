@@ -74,8 +74,8 @@ class VolumeInfo(private var context: Context) {
             if (storageVolume.isPrimary) {
                 val mStorageStatsManager = context.getSystemService(Context.STORAGE_STATS_SERVICE) as StorageStatsManager
                 val totalSpace: Long = (mStorageStatsManager.getTotalBytes(StorageManager.UUID_DEFAULT) / 1_000_000_000) * GiB
-                val usedSpace: Long = totalSpace - mStorageStatsManager.getFreeBytes(StorageManager.UUID_DEFAULT)
-                result.putAll(getVolumeSpacesMap(totalSpace.toDouble(), usedSpace.toDouble()))
+                val freeSpace: Long = totalSpace - mStorageStatsManager.getFreeBytes(StorageManager.UUID_DEFAULT)
+                result.putAll(getVolumeSpacesMap(totalSpace.toDouble(), freeSpace.toDouble()))
             } else {
                 val dir = this.getVolumeDirectory(uuid)
                 if (dir != null) {
@@ -168,7 +168,7 @@ class VolumeInfo(private var context: Context) {
         val result = getEmptyVolumeSpace()
         val volumeSpaceTotalGB = round(volumeSpaceTotal / GiB.toDouble())
         val volumeSpaceFreeGB = round(volumeSpaceFree / GiB.toDouble())
-        val volumeSpaceUsedGB = round((volumeSpaceTotalGB-volumeSpaceFreeGB) / GiB.toDouble())
+        val volumeSpaceUsedGB = volumeSpaceTotalGB - volumeSpaceFreeGB
         result[VolumeTotal] = volumeSpaceTotalGB.toString()
         result[VolumeFree] = volumeSpaceFreeGB.toString()
         result[VolumeUsed] = volumeSpaceUsedGB.toString()
