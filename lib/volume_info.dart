@@ -47,7 +47,7 @@ class VolumeSpace {
   }
 
   set usedInGB(double value) {
-    usedInGB = value;
+    _usedInGB = value;
     _calcPercentages();
   }
 

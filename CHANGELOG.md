@@ -32,4 +32,7 @@ Using Android 9 / Pie (API 28) instead for better compability
 Fixing error in volume space
 
 0.0.12
-Refactoring for better usage 
+Refactoring for better usage
+
+0.0.13
+Fixing error in usage 
