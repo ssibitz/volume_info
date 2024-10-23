@@ -69,7 +69,7 @@ class MethodChannelVolumeInfo extends VolumeInfoPlatform {
     Map? volumeInfo = await methodChannel.invokeMethod<Map<dynamic, dynamic>?>(
         'getVolumeInfo',  {'uuid': uuid}
     );
-    return (_getVolumeInfoFromMap(volumeInfo) as VolumeSpaceInfo);
+    return _getVolumeInfoFromMap(volumeInfo);
   }
 
   @override
@@ -103,8 +103,8 @@ class MethodChannelVolumeInfo extends VolumeInfoPlatform {
   }
 
   // Advanced information
-  VolumeSpace? _getVolumeInfoFromMap(Map? volumeSpaceInfoMap) {
-    VolumeSpace? result = VolumeSpace(0.0, 0.0, 0.0);
+  VolumeSpaceInfo? _getVolumeInfoFromMap(Map? volumeSpaceInfoMap) {
+    VolumeSpaceInfo? result = VolumeSpaceInfo();
     if (volumeSpaceInfoMap != null) {
       if (volumeSpaceInfoMap.containsKey(VolumeSpaceType.uuid)) {
         result.uuid = volumeSpaceInfoMap[VolumeSpaceType.uuid];
@@ -129,28 +129,24 @@ class MethodChannelVolumeInfo extends VolumeInfoPlatform {
   }
 
   VolumeSpace? _getVolumeSpaceFromMap(Map? volumeSpaceMap) {
-    // Volume space information
-    double totalInGB = 0.0;
-    double freeInGB = 0.0;
-    double usedInGB = 0.0;
+    VolumeSpace? result = VolumeSpace();
     // Get data from map
     if (volumeSpaceMap != null) {
-      if (volumeSpaceMap.containsKey(VolumeSpaceType.totalInGB)) {
-        totalInGB = double.parse(volumeSpaceMap[VolumeSpaceType.totalInGB].toString());
-      }
       if (volumeSpaceMap.containsKey(VolumeSpaceType.freeInGB)) {
-        freeInGB = double.parse(volumeSpaceMap[VolumeSpaceType.freeInGB].toString());
+        result.freeInGB = double.parse(volumeSpaceMap[VolumeSpaceType.freeInGB].toString());
       }
       if (volumeSpaceMap.containsKey(VolumeSpaceType.usedInGB)) {
-        usedInGB = double.parse(volumeSpaceMap[VolumeSpaceType.usedInGB].toString());
+        result.usedInGB = double.parse(volumeSpaceMap[VolumeSpaceType.usedInGB].toString());
+      }
+      if (volumeSpaceMap.containsKey(VolumeSpaceType.totalInGB)) {
+        result.totalInGB = double.parse(volumeSpaceMap[VolumeSpaceType.totalInGB].toString());
       }
     }
     // Assign volume space to result and calc percentage
-    VolumeSpace? result = _getVolumeInfoFromMap(volumeSpaceMap);
-    result?.totalInGB = totalInGB;
-    result?.freeInGB = freeInGB;
-    result?.usedInGB = usedInGB;
-    result?.calcPercentages();
+    VolumeSpaceInfo? volumeSpaceInfo = _getVolumeInfoFromMap(volumeSpaceMap);
+    if (volumeSpaceInfo != null) {
+      result.volumeSpaceInfo = volumeSpaceInfo;
+    }
     return result;
   }
 }

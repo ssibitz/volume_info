@@ -29,4 +29,7 @@ Making plugin available from Android 8 / OREO (API 26)
 Using Android 9 / Pie (API 28) instead for better compability
 
 0.0.11
-Fixing error in volume space 
+Fixing error in volume space
+
+0.0.12
+Refactoring for better usage 
